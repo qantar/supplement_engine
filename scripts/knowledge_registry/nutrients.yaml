@@ -1,0 +1,142 @@
+version: "1.1.0"
+
+nutrients:
+  - id: vitamin_d3
+    name: Vitamin D3
+    form: cholecalciferol
+    rda: 600
+    ear: 400
+    ul: 4000
+    dose_unit: IU
+    bioavailability_factor: 1.0
+    loinc_codes: ["1989-3", "14635-7"]
+
+  - id: vitamin_b12
+    name: Vitamin B12
+    form: methylcobalamin
+    rda: 2.4
+    ear: 2.0
+    ul: 9999
+    dose_unit: mcg
+    bioavailability_factor: 0.6
+    loinc_codes: ["2132-9"]
+
+  - id: iodine
+    name: Iodine
+    form: potassium iodide
+    rda: 150
+    ear: 120
+    ul: 1100
+    dose_unit: mcg
+    bioavailability_factor: 0.95
+    loinc_codes: ["20567-4"]
+
+  - id: selenium
+    name: Selenium
+    form: selenomethionine
+    rda: 55
+    ear: 45
+    ul: 400
+    dose_unit: mcg
+    bioavailability_factor: 0.9
+    loinc_codes: ["20567-4"]
+
+  - id: choline
+    name: Choline
+    form: choline bitartrate
+    rda: 425
+    ear: 340
+    ul: 3500
+    dose_unit: mg
+    bioavailability_factor: 0.9
+    loinc_codes: []
+
+  - id: vitamin_c
+    name: Vitamin C
+    form: ascorbic acid
+    rda: 75
+    ear: 60
+    ul: 2000
+    dose_unit: mg
+    bioavailability_factor: 0.85
+    loinc_codes: ["14629-0"]
+
+  - id: vitamin_a
+    name: Vitamin A
+    form: beta-carotene
+    rda: 700
+    ear: 500
+    ul: 3000
+    dose_unit: mcg_RAE
+    bioavailability_factor: 0.5
+    loinc_codes: []
+
+  - id: vitamin_e
+    name: Vitamin E
+    form: d-alpha-tocopherol
+    rda: 15
+    ear: 12
+    ul: 1000
+    dose_unit: mg
+    bioavailability_factor: 0.5
+    loinc_codes: []
+
+  - id: vitamin_k1
+    name: Vitamin K1
+    form: phylloquinone
+    rda: 90
+    ear: 60
+    ul: 9999
+    dose_unit: mcg
+    bioavailability_factor: 0.2
+    loinc_codes: []
+
+  - id: thiamine
+    name: Thiamine (B1)
+    form: thiamine HCl
+    rda: 1.1
+    ear: 0.9
+    ul: 9999
+    dose_unit: mg
+    bioavailability_factor: 0.8
+    loinc_codes: []
+
+  - id: riboflavin
+    name: Riboflavin (B2)
+    form: riboflavin
+    rda: 1.1
+    ear: 0.9
+    ul: 9999
+    dose_unit: mg
+    bioavailability_factor: 0.95
+    loinc_codes: []
+
+  - id: niacin
+    name: Niacin (B3)
+    form: niacinamide
+    rda: 14
+    ear: 11
+    ul: 35
+    dose_unit: mg
+    bioavailability_factor: 1.0
+    loinc_codes: []
+
+  - id: copper
+    name: Copper
+    form: copper bisglycinate
+    rda: 0.9
+    ear: 0.7
+    ul: 10
+    dose_unit: mg
+    bioavailability_factor: 0.6
+    loinc_codes: []
+
+  - id: lutein_zeaxanthin
+    name: Lutein/Zeaxanthin
+    form: AREDS2 blend
+    rda: 10
+    ear: 6
+    ul: 9999
+    dose_unit: mg
+    bioavailability_factor: 0.3
+    loinc_codes: []

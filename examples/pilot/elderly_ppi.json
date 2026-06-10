@@ -1,0 +1,41 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 78,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 26.0,
+      "indoor_occupation": false,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "K21.0", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "41493", "name": "Omeprazole", "months_on": 48, "dose_mg": 20}
+    ],
+    "labs": [
+      {
+        "loinc": "2132-9",
+        "value": 210,
+        "unit": "pg/mL",
+        "reference_low": 200,
+        "reference_high": 900
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 2.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "low"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

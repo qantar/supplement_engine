@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supplement Engine — Architecture Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 24px; background: #f8f9fa; color: #1a1a1a; }
+    h1 { font-size: 1.5rem; }
+    h2 { margin-top: 2.5rem; border-bottom: 1px solid #ccc; padding-bottom: 0.5rem; }
+    .mermaid { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; overflow-x: auto; }
+    p.note { color: #555; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <h1>Supplement Recommendation Engine — Diagrams</h1>
+  <p class="note">Open this file in a browser if Mermaid blocks in <code>ENGINE_MASTER_REFERENCE.md</code> do not render in your editor. Companion doc: <code>ENGINE_MASTER_REFERENCE.md</code>.</p>
+
+  <h2>1. Architecture at a glance</h2>
+  <pre class="mermaid">
+flowchart TB
+  subgraph external ["External - out of repo"]
+    FEEDER[Bulk feeder project]
+  end
+  subgraph ingress ["Ingress - this repo"]
+    API_DELTA[Delta APIs]
+    SEED[seed_patient_realm.py]
+  end
+  subgraph stores ["Data stores"]
+    PG[(PostgreSQL)]
+    NEO[(Neo4j KG)]
+    REDIS[(Redis cache)]
+  end
+  subgraph engine ["Recommendation engine"]
+    REPO[PatientRepository]
+    PIPE[RecommendationPipeline]
+    KAFKA[KafkaEventProducer]
+  end
+  subgraph clients ["Clients"]
+    NGINX[Nginx :80]
+    CLIENT[App / clinician]
+  end
+  FEEDER -->|INSERT rows| PG
+  SEED --> PG
+  API_DELTA --> PG
+  CLIENT --> NGINX --> REPO
+  REPO --> PG
+  PIPE --> NEO
+  PIPE --> REDIS
+  PIPE --> PG
+  API_DELTA --> KAFKA
+  PIPE --> KAFKA
+  </pre>
+
+  <h2>2. Full technology interaction (score request)</h2>
+  <pre class="mermaid">
+flowchart TB
+  WEB[Client] --> NGINX[Nginx]
+  NGINX --> MW[Middleware]
+  MW --> APP[FastAPI handlers]
+  APP --> REPO[PatientRepository]
+  REPO --> PG[(PostgreSQL)]
+  REPO --> VAL[ProfileValidator]
+  VAL --> PIPE[RecommendationPipeline]
+  PIPE --> GC[GraphClient]
+  GC --> REDIS[(Redis)]
+  GC --> NEO[(Neo4j)]
+  REDIS -.->|cache miss| NEO
+  PIPE --> RREC[RecommendationRepository]
+  RREC --> PG
+  PIPE --> EVID[EvidenceSnapshotRepository]
+  PIPE --> AUD[AuditRepository]
+  EVID --> PG
+  AUD --> PG
+  APP --> KPROD[KafkaEventProducer]
+  KPROD --> KAFKA[Kafka]
+  FEEDER[External feeder] -.-> PG
+  </pre>
+
+  <h2>3. Sequence — recommendation request</h2>
+  <pre class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant N as Nginx
+  participant A as FastAPI
+  participant P as PostgreSQL
+  participant G as GraphClient
+  participant R as Redis
+  participant J as Neo4j
+  participant K as Kafka
+  C->>N: POST /v1/recommendations
+  N->>A: proxy + rate limit
+  A->>A: API key check
+  A->>P: get_for_scoring
+  P-->>A: PatientProfile
+  A->>A: Pipeline evaluate
+  loop Cacheable KG queries
+    A->>G: nutrient / baseline / guideline
+    G->>R: GET cache
+    alt hit
+      R-->>G: cached
+    else miss
+      G->>J: Cypher
+      J-->>G: result
+      G->>R: SETEX
+    end
+  end
+  loop Safety queries
+    G->>J: interactions
+  end
+  A->>P: save session audit snapshot
+  opt KAFKA enabled
+    A->>K: recommendation.served
+  end
+  A-->>C: 200 recommendations
+  </pre>
+
+  <h2>4. Sequence — lab delta then rescore</h2>
+  <pre class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant N as Nginx
+  participant A as FastAPI
+  participant P as PostgreSQL
+  participant K as Kafka
+  C->>N: POST patients id labs
+  N->>A: proxy
+  A->>P: INSERT patient_labs
+  opt KAFKA enabled
+    A->>K: patient.events
+  end
+  A-->>C: 201 created
+  Note over C,P: Rescore picks latest lab per LOINC
+  C->>N: POST recommendations patient_id
+  N->>A: proxy
+  A->>P: SELECT with read controls
+  A-->>C: 200 recommendations
+  </pre>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });
+  </script>
+</body>
+</html>

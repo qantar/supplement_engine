@@ -1,0 +1,84 @@
+medications:
+  - rxnorm_cui: "6809"
+    name: Metformin
+    atc_code: A10BA02
+
+  - rxnorm_cui: "41493"
+    name: Omeprazole
+    atc_code: A02BC01
+
+  - rxnorm_cui: "36567"
+    name: Atorvastatin
+    atc_code: C10AA05
+
+  - rxnorm_cui: "4603"
+    name: Furosemide
+    atc_code: C03CA01
+
+  - rxnorm_cui: "1091643"
+    name: Warfarin
+    atc_code: B01AA03
+
+  - rxnorm_cui: "82064"
+    name: Levodopa
+    atc_code: N04BA01
+
+  - rxnorm_cui: "10324"
+    name: Phenytoin
+    atc_code: N03AB02
+
+  - rxnorm_cui: "11124"
+    name: Valproate
+    atc_code: N03AG01
+
+  - rxnorm_cui: "30131"
+    name: Lisinopril
+    atc_code: C09AA03
+
+  - rxnorm_cui: "83367"
+    name: Atorvastatin
+    atc_code: C10AA05
+
+  - rxnorm_cui: "4603"
+    name: Furosemide
+    atc_code: C03CA01
+
+  - rxnorm_cui: "9524"
+    name: Spironolactone
+    atc_code: C03DA01
+
+  - rxnorm_cui: "3640"
+    name: Doxycycline
+    atc_code: J01AA02
+
+  - rxnorm_cui: "83367"
+    name: Ciprofloxacin
+    atc_code: J01MA02
+
+  - rxnorm_cui: "6038"
+    name: Isoniazid
+    atc_code: J04AC01
+
+  - rxnorm_cui: "42347"
+    name: Alendronate
+    atc_code: M05BA04
+
+  - rxnorm_cui: "72625"
+    name: Methotrexate
+    atc_code: L04AX03
+
+  - rxnorm_cui: "5640"
+    name: Ibuprofen
+    atc_code: M01AE01
+
+  - rxnorm_cui: "36437"
+    name: Sertraline
+    atc_code: N06AB06
+
+  - rxnorm_cui: "197361"
+    name: Losartan
+    atc_code: C09CA01
+
+  - rxnorm_cui: "197379"
+    name: Amlodipine
+    atc_code: C08CA01

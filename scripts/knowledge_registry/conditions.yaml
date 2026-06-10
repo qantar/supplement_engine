@@ -1,0 +1,48 @@
+conditions:
+  - icd10_code: E11.9
+    name: Type 2 Diabetes Mellitus
+
+  - icd10_code: I10
+    name: Hypertension
+
+  - icd10_code: K90.0
+    name: Celiac Disease
+
+  - icd10_code: K50.90
+    name: Crohn Disease unspecified
+
+  - icd10_code: K51.90
+    name: Ulcerative Colitis unspecified
+
+  - icd10_code: Z98.84
+    name: Bariatric surgery status
+
+  - icd10_code: E03.9
+    name: Hypothyroidism unspecified
+
+  - icd10_code: G35
+    name: Multiple Sclerosis
+
+  - icd10_code: H35.31
+    name: Age-related Macular Degeneration
+
+  - icd10_code: E83.110
+    name: Hemochromatosis
+
+  - icd10_code: M81.0
+    name: Osteoporosis
+
+  - icd10_code: K21.0
+    name: GERD with esophagitis
+
+  - icd10_code: F32.9
+    name: Major Depressive Disorder
+
+  - icd10_code: N18.3
+    name: CKD Stage 3
+
+  - icd10_code: N18.4
+    name: CKD Stage 4
+
+  - icd10_code: E66.9
+    name: Obesity

@@ -1,0 +1,134 @@
+condition_edges:
+  - condition: K90.0
+    nutrient: iron
+    rel_type: CAUSES_MALABSORPTION_OF
+    lr: 2.5
+    mechanism: Villous atrophy reduces iron absorption
+
+  - condition: K90.0
+    nutrient: folate
+    rel_type: CAUSES_MALABSORPTION_OF
+    lr: 2.2
+    mechanism: Malabsorption in proximal small intestine
+
+  - condition: K90.0
+    nutrient: vitamin_b12
+    rel_type: CAUSES_MALABSORPTION_OF
+    lr: 2.0
+    mechanism: Terminal ileum involvement
+
+  - condition: K90.0
+    nutrient: vitamin_d3
+    rel_type: CAUSES_MALABSORPTION_OF
+    lr: 2.3
+    mechanism: Fat malabsorption reduces D absorption
+
+  - condition: K50.90
+    nutrient: iron
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 2.5
+    mechanism: Chronic GI blood loss and inflammation
+
+  - condition: K50.90
+    nutrient: vitamin_d3
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 2.0
+    mechanism: Inflammation and malabsorption
+
+  - condition: Z98.84
+    nutrient: vitamin_d3
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 3.0
+    mechanism: Post-bariatric malabsorption
+
+  - condition: Z98.84
+    nutrient: vitamin_b12
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 3.5
+    mechanism: Reduced intrinsic factor after gastric bypass
+
+  - condition: Z98.84
+    nutrient: thiamine
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 2.8
+    mechanism: Wernicke risk after rapid weight loss surgery
+
+  - condition: E03.9
+    nutrient: selenium
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 1.6
+    mechanism: Selenium supports deiodinase activity
+
+  - condition: I10
+    nutrient: magnesium
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 1.5
+    mechanism: Magnesium supports vascular tone
+
+  - condition: I10
+    nutrient: coq10
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 1.4
+    mechanism: CoQ10 depletion with some antihypertensives
+
+  - condition: H35.31
+    nutrient: lutein_zeaxanthin
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 2.2
+    mechanism: AREDS2 macular pigment support
+
+  - condition: G35
+    nutrient: vitamin_d3
+    rel_type: INCREASES_DEMAND_FOR
+    lr: 1.8
+    mechanism: Immunomodulatory role in MS
+
+drug_edges:
+  - medication: "6038"
+    nutrient: vitamin_b6
+    rel_type: DEPLETES
+    lr: 2.5
+    onset_months: 3
+    mechanism: Isoniazid induces B6 deficiency neuropathy
+
+  - medication: "10324"
+    nutrient: vitamin_d3
+    rel_type: DEPLETES
+    lr: 1.8
+    onset_months: 6
+    mechanism: CYP450 induction increases D catabolism
+
+  - medication: "11124"
+    nutrient: folate
+    rel_type: DEPLETES
+    lr: 2.0
+    onset_months: 6
+    mechanism: Folate antagonism
+
+  - medication: "42347"
+    nutrient: calcium
+    rel_type: INTERACTS_WITH
+    severity: moderate
+    mechanism: Bisphosphonate chelation
+    action: Separate calcium and bisphosphonate by ≥30-60 min
+
+  - medication: "3640"
+    nutrient: iron
+    rel_type: INTERACTS_WITH
+    severity: moderate
+    mechanism: Tetracycline chelation
+    action: Separate doses by ≥2 hours
+
+  - medication: "9524"
+    nutrient: potassium
+    rel_type: INTERACTS_WITH
+    severity: contraindicated
+    mechanism: K-sparing diuretic hyperkalemia risk
+    action: Avoid potassium supplements
+
+  - medication: "30131"
+    nutrient: potassium
+    rel_type: INTERACTS_WITH
+    severity: major
+    mechanism: ACE inhibitor reduces K excretion
+    action: Avoid potassium supplements without monitoring

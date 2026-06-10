@@ -1,0 +1,39 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 45,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 28.0,
+      "indoor_occupation": true,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "E83.110", "system": "ICD-10", "source": "clinician"}
+    ],
+    "medications": [],
+    "labs": [
+      {
+        "loinc": "14979-9",
+        "value": 420,
+        "unit": "ng/mL",
+        "reference_low": 30,
+        "reference_high": 300
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 2.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "moderate"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

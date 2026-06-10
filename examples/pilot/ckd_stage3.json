@@ -1,0 +1,43 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 68,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 27.5,
+      "indoor_occupation": false,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "N18.3", "system": "ICD-10", "source": "ehr"},
+      {"code": "E11.9", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "30131", "name": "Lisinopril", "months_on": 36, "dose_mg": 10},
+      {"rxnorm": "6809", "name": "Metformin", "months_on": 24, "dose_mg": 500}
+    ],
+    "labs": [
+      {
+        "loinc": "19123-9",
+        "value": 1.6,
+        "unit": "mg/dL",
+        "reference_low": 1.7,
+        "reference_high": 2.2
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 3.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "low"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

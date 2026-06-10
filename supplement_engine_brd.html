@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Supplement Recommendation Engine — Technical BRD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"/>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --ink: #0f0f0f;
+  --ink2: #3a3a3a;
+  --ink3: #6b6b6b;
+  --paper: #fafaf8;
+  --surface: #f2f1ed;
+  --border: #e0ded8;
+  --accent: #1a3a5c;
+  --accent2: #0f6e56;
+  --accent3: #993c1d;
+  --accent4: #533ab7;
+  --gold: #ba7517;
+  --ruby: #a32d2d;
+  --teal: #0f6e56;
+  --navy: #1a3a5c;
+  --font-head: 'DM Serif Display', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:var(--paper);color:var(--ink);font-size:15px;line-height:1.75}
+/* NAV */
+nav{position:fixed;top:0;left:0;width:260px;height:100vh;background:#0f1923;overflow-y:auto;z-index:100;padding:28px 0 40px}
+nav .logo{padding:0 24px 28px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:12px}
+nav .logo h2{font-family:var(--font-head);color:#fff;font-size:15px;line-height:1.3;font-weight:400}
+nav .logo span{font-size:11px;color:rgba(255,255,255,.4);letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-body)}
+nav ul{list-style:none}
+nav ul li a{display:flex;align-items:center;gap:8px;padding:7px 24px;font-size:12.5px;color:rgba(255,255,255,.55);text-decoration:none;transition:all .15s;letter-spacing:.01em}
+nav ul li a:hover,nav ul li a.active{color:#fff;background:rgba(255,255,255,.06)}
+nav ul li a .badge{margin-left:auto;font-size:10px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.6);padding:1px 6px;border-radius:20px}
+nav .section-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:16px 24px 4px;font-family:var(--font-body)}
+/* MAIN */
+main{margin-left:260px;padding:0 64px 80px;max-width:1100px}
+/* SECTIONS */
+.section{padding:72px 0 0;border-top:1px solid var(--border);margin-top:60px}
+.section:first-child{border-top:none;padding-top:64px;margin-top:0}
+.section-tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);font-family:var(--font-body);font-weight:500;margin-bottom:10px}
+h1{font-family:var(--font-head);font-size:44px;line-height:1.15;color:var(--ink);font-weight:400;margin-bottom:20px}
+h2{font-family:var(--font-head);font-size:30px;color:var(--ink);font-weight:400;margin-bottom:16px;line-height:1.2}
+h3{font-family:var(--font-body);font-size:16px;font-weight:600;color:var(--ink);margin-bottom:10px;letter-spacing:-.01em}
+h4{font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+p{color:var(--ink2);margin-bottom:14px;line-height:1.8}
+p:last-child{margin-bottom:0}
+/* HERO */
+.hero{padding:80px 0 60px;border-bottom:1px solid var(--border)}
+.hero-meta{display:flex;gap:24px;margin-top:28px;flex-wrap:wrap}
+.hero-pill{font-size:12px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:4px 12px;color:var(--ink3);font-weight:500}
+.hero-pill strong{color:var(--ink);font-weight:600}
+/* CARDS */
+.card-grid{display:grid;gap:16px;margin:24px 0}
+.card-grid.cols2{grid-template-columns:1fr 1fr}
+.card-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px 22px}
+.card.accent-navy{border-top:3px solid var(--navy)}
+.card.accent-teal{border-top:3px solid var(--teal)}
+.card.accent-gold{border-top:3px solid var(--gold)}
+.card.accent-ruby{border-top:3px solid var(--ruby)}
+.card.accent-purple{border-top:3px solid var(--accent4)}
+.card h3{margin-bottom:6px;font-size:14px}
+.card p{font-size:13px;line-height:1.65;color:var(--ink3)}
+/* TABLE */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px}
+th{background:var(--surface);border:1px solid var(--border);padding:9px 13px;text-align:left;font-weight:600;color:var(--ink);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+td{border:1px solid var(--border);padding:9px 13px;color:var(--ink2);vertical-align:top;line-height:1.6}
+tr:hover td{background:var(--surface)}
+/* CODE */
+.code-block{background:#0f1923;border-radius:8px;padding:20px 22px;margin:16px 0;overflow-x:auto}
+.code-block code{font-family:var(--font-mono);font-size:12.5px;color:#a8d8c8;line-height:1.7}
+.code-block .comment{color:#4a6a5a}
+.code-block .keyword{color:#c896d4}
+.code-block .string{color:#f0b060}
+.code-block .number{color:#80c8f0}
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{font-size:12px;padding:4px 11px;border-radius:4px;font-weight:500;font-family:var(--font-mono)}
+.chip.navy{background:#e6f1fb;color:var(--navy)}
+.chip.teal{background:#e1f5ee;color:var(--teal)}
+.chip.gold{background:#faeeda;color:var(--gold)}
+.chip.ruby{background:#fcebeb;color:var(--ruby)}
+.chip.purple{background:#eeedfe;color:var(--accent4)}
+.chip.gray{background:var(--surface);color:var(--ink3)}
+/* STORY CARDS */
+.story{border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:12px;background:#fff}
+.story-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.story-id{font-size:10px;font-weight:600;background:var(--navy);color:#fff;border-radius:3px;padding:2px 7px;font-family:var(--font-mono)}
+.story-role{font-size:12px;color:var(--ink3);font-style:italic}
+.story p{font-size:13.5px;margin-bottom:8px}
+.story ul{font-size:13px;color:var(--ink2);padding-left:18px}
+.story ul li{margin-bottom:3px}
+/* ENTITY */
+.entity-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.entity{background:#fff;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.entity-head{background:var(--surface);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.entity-head h4{margin:0;font-size:13px;font-weight:600;color:var(--ink)}
+.entity-head .tag{font-size:10px;background:var(--navy);color:#fff;border-radius:3px;padding:2px 6px;font-family:var(--font-mono)}
+.entity-fields{padding:12px 16px}
+.field-row{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f0ede6;align-items:flex-start;font-size:12.5px}
+.field-row:last-child{border-bottom:none}
+.field-name{font-family:var(--font-mono);color:var(--navy);min-width:130px;font-size:12px;font-weight:500}
+.field-type{color:var(--teal);font-family:var(--font-mono);font-size:11px;min-width:80px}
+.field-note{color:var(--ink3);font-size:11.5px;flex:1}
+/* PIPELINE */
+.pipeline{display:flex;align-items:stretch;gap:0;margin:24px 0;overflow-x:auto}
+.p-step{background:#fff;border:1px solid var(--border);border-radius:0;padding:16px 18px;min-width:140px;flex:1;position:relative}
+.p-step:first-child{border-radius:8px 0 0 8px}
+.p-step:last-child{border-radius:0 8px 8px 0}
+.p-step:not(:last-child)::after{content:'→';position:absolute;right:-13px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--ink3);z-index:2;background:var(--paper);padding:0 2px}
+.p-step h4{font-size:11px;margin-bottom:6px}
+.p-step p{font-size:11.5px;color:var(--ink3)}
+.p-step .p-icon{font-size:20px;margin-bottom:8px}
+/* SLO BADGE */
+.slo{font-size:11px;font-family:var(--font-mono);background:#e1f5ee;color:var(--teal);border-radius:3px;padding:2px 6px;white-space:nowrap}
+/* DIVIDER */
+.divider{border:none;border-top:1px solid var(--border);margin:32px 0}
+/* CALLOUT */
+.callout{border-left:3px solid var(--navy);background:#e6f1fb20;padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0}
+.callout p{font-size:13.5px;color:var(--ink2)}
+.callout.warn{border-left-color:var(--gold);background:#faeeda20}
+.callout.danger{border-left-color:var(--ruby);background:#fcebeb20}
+/* PHASE TIMELINE */
+.timeline{margin:24px 0}
+.phase{display:grid;grid-template-columns:120px 1fr;gap:0;margin-bottom:0}
+.phase-time{padding:16px 20px 16px 0;border-right:2px solid var(--border);text-align:right;font-size:12px;font-family:var(--font-mono);color:var(--ink3);font-weight:500;position:relative}
+.phase-time::after{content:'';position:absolute;right:-6px;top:22px;width:10px;height:10px;border-radius:50%;background:var(--navy);border:2px solid var(--paper)}
+.phase-content{padding:16px 0 16px 24px}
+.phase-content h3{margin-bottom:6px;font-size:14px}
+.phase-content p{font-size:13px;color:var(--ink3)}
+.phase-content .chips{margin:8px 0 0}
+/* MERMAID */
+.mermaid-wrap{background:#fff;border:1px solid var(--border);border-radius:8px;padding:24px;margin:20px 0;overflow-x:auto}
+/* OLAP SECTION */
+.olap-card{border:1px solid var(--border);border-radius:8px;background:#fff;padding:20px;margin-bottom:14px}
+.olap-card h3{font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.olap-card .badge{font-size:10px;font-family:var(--font-mono);padding:2px 7px;border-radius:3px;font-weight:600}
+.badge-olap{background:#eeedfe;color:var(--accent4)}
+.badge-ml{background:#e1f5ee;color:var(--teal)}
+.badge-rt{background:#faeeda;color:var(--gold)}
+/* UML method */
+.uml-class{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px;background:#fff}
+.uml-class-head{background:var(--navy);color:#fff;padding:8px 14px;font-size:13px;font-weight:600;font-family:var(--font-mono)}
+.uml-class-section{border-top:1px solid var(--border);padding:8px 14px}
+.uml-method{font-family:var(--font-mono);font-size:12px;color:var(--ink2);padding:2px 0}
+.uml-method .visibility{color:var(--teal);font-weight:600}
+.uml-method .return-type{color:var(--accent4)}
+/* SCROLLSPY */
+html{scroll-behavior:smooth}
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{display:none}
+  main{margin-left:0;padding:0 20px 60px}
+}
+.tag-inline{font-size:11px;font-family:var(--font-mono);background:var(--surface);color:var(--ink3);border:1px solid var(--border);padding:1px 6px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="logo">
+    <h2>Supplement Recommendation Engine</h2>
+    <span>Technical BRD v1.2</span>
+  </div>
+  <div class="section-label">Overview</div>
+  <ul>
+    <li><a href="#executive">Executive Summary</a></li>
+    <li><a href="#architecture">System Architecture</a></li>
+    <li><a href="#implementation-status">Implementation Status</a></li>
+    <li><a href="#data-ingestion">Data Ingestion</a></li>
+    <li><a href="#rule-engine">Rule Engine Integration</a></li>
+  </ul>
+  <div class="section-label">Shipped Reference</div>
+  <ul>
+    <li><a href="#engine-reference">Engine Reference</a></li>
+    <li><a href="#ref-postgres">↳ Postgres schema</a></li>
+    <li><a href="#ref-neo4j">↳ Neo4j graph</a></li>
+    <li><a href="#ref-api">↳ API contract</a></li>
+    <li><a href="#ref-diagrams">↳ ERD &amp; sequences</a></li>
+  </ul>
+  <div class="section-label">Data Model</div>
+  <ul>
+    <li><a href="#entities">Entity Definitions</a></li>
+    <li><a href="#erd">ERD Diagram</a></li>
+    <li><a href="#relationships">Relationships</a></li>
+  </ul>
+  <div class="section-label">Requirements</div>
+  <ul>
+    <li><a href="#user-stories">User Stories</a></li>
+    <li><a href="#services">Service Catalogue</a></li>
+    <li><a href="#apis">API Contracts</a></li>
+  </ul>
+  <div class="section-label">Diagrams</div>
+  <ul>
+    <li><a href="#uml">UML Class Diagrams</a></li>
+    <li><a href="#sequence">Sequence Diagrams</a></li>
+    <li><a href="#flows">Process Flows</a></li>
+  </ul>
+  <div class="section-label">Pipelines</div>
+  <ul>
+    <li><a href="#olap">OLAP & Analytics Layer</a></li>
+    <li><a href="#ml-pipeline">ML Pipeline</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+  </ul>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- ══════════════════════════════════════════════ HERO -->
+<div class="hero" id="executive">
+  <div class="section-tag">Technical Business Requirements Document</div>
+  <h1>Personalized Supplement<br/>Recommendation Engine</h1>
+  <p style="font-size:17px;color:var(--ink2);max-width:680px;line-height:1.7">A hybrid symbolic-statistical clinical decision support engine that reads normalized patient state from PostgreSQL and clinical evidence from Neo4j, then produces ranked nutraceutical recommendations through a deterministic safety gate. Patient bulk backfill is owned by an <strong>external feeder project</strong> (writes Postgres directly); this engine handles <strong>realtime deltas</strong> (labs, meds, conditions) and <strong>scoring</strong> — never warehouse joins at request time.</p>
+  <div class="hero-meta">
+    <div class="hero-pill"><strong>Status:</strong> Phase 2a–2c M1/M2 shipped</div>
+    <div class="hero-pill"><strong>Next:</strong> External feeder integration + clinical sign-off</div>
+    <div class="hero-pill"><strong>Classification:</strong> CDSS-Adjacent / Wellness</div>
+    <div class="hero-pill"><strong>Region:</strong> Saudi Arabia (KSA) primary</div>
+    <div class="hero-pill"><strong>Version:</strong> 1.1</div>
+    <div class="hero-pill"><strong>Stack:</strong> Python 3.12 · Neo4j · PostgreSQL · FastAPI · Redis</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ ARCHITECTURE -->
+<div class="section" id="architecture">
+  <div class="section-tag">Section 01</div>
+  <h2>System Architecture</h2>
+  <p>The system has three layers: <strong>ingest</strong> (external bulk feeder → Postgres + this engine’s delta APIs), <strong>stores</strong> (PostgreSQL patient realm + Neo4j knowledge graph), and <strong>online scoring</strong> (stateless recommendation pipeline + deterministic safety gate). The Recommender Core reads typed domain objects only; vocabulary mapping happens in Intake or the external feeder.</p>
+
+  <div class="callout">
+    <p><strong>Non-negotiable split:</strong> Neo4j owns clinical knowledge. PostgreSQL owns patient PHI, sessions, audit, and feedback. They link by vocabulary keys (<span class="tag-inline">icd10_code</span>, <span class="tag-inline">rxnorm_cui</span>, <span class="tag-inline">loinc</span>, <span class="tag-inline">nutrient_id</span>) through the application layer only. No direct DB-to-DB connection.</p>
+  </div>
+
+  <div class="card-grid cols3">
+    <div class="card accent-navy">
+      <h3>Intake &amp; Normalizer</h3>
+      <p>Shared normalization for bulk ETL and realtime APIs: RxNorm, ICD-10, LOINC, unit conversion. Writes patient realm in Postgres. Phase 2.</p>
+    </div>
+    <div class="card accent-teal">
+      <h3>Recommender Core</h3>
+      <p>Bayesian DRS + candidate generation + dose optimization + confidence. Reads <span class="tag-inline">PatientProfile</span> from Postgres + Neo4j edges. Phase 1 shipped.</p>
+    </div>
+    <div class="card accent-ruby">
+      <h3>Safety Engine</h3>
+      <p>Deterministic Python gate: drug-nutrient, disease CI, antagonists, 70% UL cap, escalation. No ML. Runs after recommender. Phase 1 shipped.</p>
+    </div>
+    <div class="card accent-gold">
+      <h3>Personalization ML</h3>
+      <p>Bayesian individual update, dose optimization, lab integration. SLO: p95 &lt; 400ms</p>
+    </div>
+    <div class="card accent-purple">
+      <h3>Evidence Service</h3>
+      <p>Returns GRADE-rated citations per recommendation claim. SLO: p95 &lt; 100ms</p>
+    </div>
+    <div class="card accent-navy">
+      <h3>Explain Service</h3>
+      <p>Template-driven rationale (Phase 1) + optional constrained LLM polish (Phase 2). SLO: p95 &lt; 600ms</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Tech Stack</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Rationale</th></tr>
+    <tr><td>API Gateway</td><td><span class="chip navy">Kong</span> / <span class="chip navy">AWS APIGW</span></td><td>OAuth2, rate limiting, request signing</td></tr>
+    <tr><td>Application Services</td><td><span class="chip teal">FastAPI (Python 3.12)</span></td><td>API, pipeline orchestration, safety engine (all Python in MVP)</td></tr>
+    <tr><td>Knowledge Graph</td><td><span class="chip purple">Neo4j 5.20</span></td><td>Native graph traversal for nutrient-condition-drug edges; seeded v1.1.0</td></tr>
+    <tr><td>Cache</td><td><span class="chip teal">Redis 7</span></td><td>GraphClient TTL cache for nutrient/baseline/guideline reads</td></tr>
+    <tr><td>Patient Store</td><td><span class="chip navy">PostgreSQL 16 + RLS</span></td><td>Row-level security for PHI; audit log</td></tr>
+    <tr><td>Feature Store</td><td><span class="chip teal">Feast</span></td><td>Reproducible ML features for retraining</td></tr>
+    <tr><td>Rule Engine</td><td><span class="chip gold">OptimizedRuleEngine (yours)</span></td><td>Vectorized pandas, parallel condition sets, 10-50× speedup</td></tr>
+    <tr><td>Streaming</td><td><span class="chip navy">Kafka (Confluent)</span></td><td>Real-time patient.events → recommendation.served</td></tr>
+    <tr><td>Orchestration</td><td><span class="chip gray">Airflow + dbt</span></td><td>Patient bulk sync, evidence ingestion, OLAP mart, nightly retraining (Phase 2+)</td></tr>
+    <tr><td>Observability</td><td><span class="chip gray">OpenTelemetry → Grafana</span></td><td>Audit + perf; 7-year retention</td></tr>
+    <tr><td>Optional LLM</td><td><span class="chip purple">Claude API (Anthropic)</span></td><td>Explanation rewrite, constrained post-processing</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════ IMPLEMENTATION STATUS -->
+<div class="section" id="implementation-status">
+  <div class="section-tag">Section 01b</div>
+  <h2>Implementation Status</h2>
+  <p>What is shipped in the repository today vs planned next. Gates validated: Phase 2b prod (5/5), pilot cohort, 2c M1 Kafka, 2c M2 personalization.</p>
+
+  <table>
+    <tr><th>Component</th><th>Phase</th><th>Status</th><th>Location</th></tr>
+    <tr><td>Recommendation pipeline (7 stages)</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>src/pipelines/recommendation_pipeline.py</code></td></tr>
+    <tr><td>DeficiencyRiskScorer + CandidateGenerator</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>src/core/</code></td></tr>
+    <tr><td>SafetyEngine (deterministic)</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>src/safety/safety_engine.py</code></td></tr>
+    <tr><td>ExplainService (template rationale)</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>src/explain/explain_service.py</code></td></tr>
+    <tr><td>GraphClient + Redis cache</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>src/knowledge/graph_client.py</code></td></tr>
+    <tr><td>Evidence snapshots + audit log</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>src/db/repositories.py</code></td></tr>
+    <tr><td>Alembic migrations + Docker entrypoint</td><td>1</td><td><span class="chip teal">Shipped</span></td><td><code>alembic/</code>, <code>docker-compose.yml</code></td></tr>
+    <tr><td>POST /v1/recommendations (inline patient JSON)</td><td>1</td><td><span class="chip teal">Shipped</span></td><td>Dev/demo path; upserts patient on each request</td></tr>
+    <tr><td>POST /v1/recommendations (patient_id only)</td><td>2a</td><td><span class="chip teal">Shipped</span></td><td>Production read path; load from Postgres</td></tr>
+    <tr><td>Patient ingest APIs (labs, meds, conditions)</td><td>2a</td><td><span class="chip teal">Shipped</span></td><td><code>src/api/app.py</code>, <code>src/intake/</code></td></tr>
+    <tr><td>dbt patient realm contract + seed</td><td>2a</td><td><span class="chip teal">Shipped</span></td><td><code>etl/</code>, <code>scripts/seed_patient_realm.py</code></td></tr>
+    <tr><td>Prod API key auth + inline patient disabled</td><td>2b M1</td><td><span class="chip teal">Shipped</span></td><td><code>docker-compose.prod.yml</code>, <code>src/api/middleware/api_key.py</code></td></tr>
+    <tr><td>Readiness probes + evidence content hash</td><td>2b M2</td><td><span class="chip teal">Shipped</span></td><td><code>/health/live</code>, <code>/health/ready</code>, pipeline snapshot</td></tr>
+    <tr><td>Structured JSON request logging (no PHI)</td><td>2b M4</td><td><span class="chip teal">Shipped</span></td><td><code>src/api/app.py</code> middleware</td></tr>
+    <tr><td>Pilot cohort (7 seed patients)</td><td>2b pilot</td><td><span class="chip teal">Shipped</span></td><td><code>examples/pilot/</code>, <code>scripts/seed_patient_realm.py</code></td></tr>
+    <tr><td>Kafka patient.events / recommendation.served</td><td>2c M1</td><td><span class="chip teal">Shipped</span></td><td><code>src/pipelines/kafka_producer.py</code></td></tr>
+    <tr><td>PersonalizationEngine (longitudinal DRS)</td><td>2c M2</td><td><span class="chip teal">Shipped</span></td><td><code>src/personalization/engine.py</code> (flag-gated)</td></tr>
+    <tr><td>External bulk feeder → Postgres patient realm</td><td>Ops</td><td><span class="chip navy">Out of repo</span></td><td>Separate project; contract in <code>etl/PATIENT_REALM_CONTRACT.md</code></td></tr>
+    <tr><td>POST /v1/labs/parse (FHIR/HL7)</td><td>2c M4</td><td><span class="chip gold">Planned</span></td><td><code>src/pipelines/lab_parser.py</code> — only if LIS integration is next</td></tr>
+    <tr><td>Analytics mart (fact_recommendations)</td><td>2c M3</td><td><span class="chip gold">Planned</span></td><td>Optional; reads Postgres audit tables, not warehouse</td></tr>
+    <tr><td>SMART-on-FHIR EHR launch</td><td>3</td><td><span class="chip gray">Future</span></td><td>Another intake adapter</td></tr>
+    <tr><td>LightGBM dose-response</td><td>3</td><td><span class="chip gray">Future</span></td><td>Constrained to +/-30% of rules dose</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════ SHIPPED ENGINE REFERENCE -->
+<div class="section" id="engine-reference">
+  <div class="section-tag">Section 01d — Shipped Reference</div>
+  <h2>Engine Reference (As Built)</h2>
+  <p>Canonical schema, graph model, API contract, and diagrams for everything implemented in this repository. Source of truth: <span class="tag-inline">src/db/orm_models.py</span>, <span class="tag-inline">scripts/neo4j_seed.cypher</span>, <span class="tag-inline">src/api/app.py</span>. Operational runbook: <span class="tag-inline">ENGINE_MASTER_REFERENCE.md</span> · browser diagrams: <span class="tag-inline">ENGINE_DIAGRAMS.html</span>.</p>
+
+  <div class="callout">
+    <p><strong>Architecture split:</strong> Bulk patient load = external project writing Postgres directly (<span class="tag-inline">etl/PATIENT_REALM_CONTRACT.md</span>). This engine = delta APIs + <code>POST /v1/recommendations</code> scoring. Neo4j holds clinical KG only — no PHI.</p>
+  </div>
+
+  <!-- POSTGRES -->
+  <h3 id="ref-postgres" style="margin-top:32px">PostgreSQL — Patient Realm &amp; Audit (12 tables)</h3>
+  <p>Database: <code>supplement_engine</code> · Migrations: Alembic <code>001</code> → <code>003_drs_snapshot</code> · Immutability: <code>audit_log</code> and <code>evidence_snapshots</code> are append-only (enforced in <span class="tag-inline">scripts/postgres_init.sql</span>).</p>
+
+  <h4 style="margin-top:20px">patients</h4>
+  <table>
+    <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+    <tr><td><code>patient_id</code></td><td>UUID PK</td><td>Pseudonymized identifier</td></tr>
+    <tr><td><code>hashed_mrn</code></td><td>TEXT</td><td>SHA-256(source:mrn) for external feeder identity</td></tr>
+    <tr><td><code>dob_year</code></td><td>INT</td><td>Year only (de-identified age)</td></tr>
+    <tr><td><code>sex</code></td><td>VARCHAR(10)</td><td>M / F / Other</td></tr>
+    <tr><td><code>region_code</code></td><td>VARCHAR(20)</td><td>ISO 3166-2 e.g. SA-01</td></tr>
+    <tr><td><code>pregnancy_status</code></td><td>BOOL</td><td>Guideline override trigger</td></tr>
+    <tr><td><code>lactation_status</code></td><td>BOOL</td><td>Demographic modifier</td></tr>
+    <tr><td><code>bmi</code></td><td>NUMERIC(5,2)</td><td>Body mass index</td></tr>
+    <tr><td><code>indoor_occupation</code></td><td>BOOL</td><td>Vit D veiling/indoor LR inputs</td></tr>
+    <tr><td><code>veiled_dress</code></td><td>BOOL</td><td>KSA demographic modifier</td></tr>
+    <tr><td><code>consent_version</code></td><td>TEXT</td><td>Regulatory consent tracking</td></tr>
+    <tr><td><code>created_at</code> / <code>updated_at</code></td><td>TIMESTAMPTZ</td><td>Row lifecycle</td></tr>
+  </table>
+
+  <h4 style="margin-top:20px">patient_conditions · patient_medications · patient_labs</h4>
+  <table>
+    <tr><th>Table</th><th>Key columns</th><th>Ingest metadata (Phase 2a)</th></tr>
+    <tr><td><code>patient_conditions</code></td><td><code>id</code> PK, <code>patient_id</code> FK, <code>icd10_code</code>, <code>snomed_id</code>, <code>onset_date</code>, <code>resolved_date</code>, <code>source</code> (self|ehr|clinician|warehouse)</td><td><code>ingest_batch_id</code>, <code>source_system</code>, <code>ingested_at</code></td></tr>
+    <tr><td><code>patient_medications</code></td><td><code>id</code> PK, <code>patient_id</code> FK, <code>rxnorm_cui</code>, <code>name</code>, <code>dose_mg</code>, <code>frequency</code>, <code>months_on</code>, <code>start_date</code>, <code>stop_date</code></td><td>same ingest columns</td></tr>
+    <tr><td><code>patient_labs</code></td><td><code>id</code> PK, <code>patient_id</code> FK, <code>loinc</code>, <code>value_num</code>, <code>unit</code>, <code>collected_at</code>, <code>reference_low</code>, <code>reference_high</code>, <code>flagged</code></td><td>same ingest columns</td></tr>
+  </table>
+
+  <h4 style="margin-top:20px">recommendation_sessions · recommendations · recommendation_warnings</h4>
+  <table>
+    <tr><th>Table</th><th>Key columns</th></tr>
+    <tr><td><code>recommendation_sessions</code></td><td><code>session_id</code> PK, <code>patient_id</code> FK, <code>model_version</code>, <code>evidence_snapshot_id</code>, <code>requires_clinician</code>, <code>clinician_handoff</code>, <code>next_review_weeks</code>, <code>suppressed_count</code>, <code>suppressed_detail</code> JSONB, <code>drs_snapshot</code> JSONB (Phase 2c M2), <code>execution_ms</code>, <code>served_at</code></td></tr>
+    <tr><td><code>recommendations</code></td><td><code>rec_id</code> PK, <code>patient_id</code> FK, <code>session_id</code>, <code>nutrient_id</code>, <code>nutrient_name</code>, <code>form</code>, dose fields (<code>dose_amount</code>, <code>dose_unit</code>, <code>dose_frequency</code>, <code>dose_with_food</code>, <code>dose_ul_pct_used</code>, <code>dose_cap_applied</code>), <code>confidence_score</code>, <code>evidence_grade</code> A–D, <code>requires_clinician</code>, rationale text fields, <code>model_version</code>, <code>evidence_snapshot_id</code>, <code>rank</code>, <code>served_at</code></td></tr>
+    <tr><td><code>recommendation_warnings</code></td><td><code>id</code> PK, <code>rec_id</code> FK, <code>severity</code>, <code>with_agent</code>, <code>action</code>, <code>mechanism</code></td></tr>
+  </table>
+
+  <h4 style="margin-top:20px">rec_feedback · audit_log · evidence_snapshots · ingest_batches · model_versions</h4>
+  <table>
+    <tr><th>Table</th><th>Key columns</th></tr>
+    <tr><td><code>rec_feedback</code></td><td><code>id</code> PK, <code>rec_id</code> FK, <code>session_id</code>, <code>source</code> (user|clinician), <code>action</code> (accepted|rejected|modified|adverse_event), <code>notes</code>, <code>created_at</code></td></tr>
+    <tr><td><code>audit_log</code></td><td><code>id</code> PK, <code>session_id</code>, <code>patient_id</code>, <code>model_version</code>, <code>evidence_snapshot_id</code>, <code>input_hash</code> SHA-256, <code>output_summary</code> JSONB, <code>suppressed_count</code>, <code>requires_clinician</code>, <code>execution_ms</code>, <code>created_at</code> — INSERT only</td></tr>
+    <tr><td><code>evidence_snapshots</code></td><td><code>snapshot_id</code> PK, <code>kg_commit_sha</code>, <code>captured_at</code>, <code>contents</code> JSONB incl. <code>content_hash</code> (Phase 2b M2)</td></tr>
+    <tr><td><code>ingest_batches</code></td><td><code>batch_id</code> PK, <code>source_system</code>, <code>row_counts</code> JSONB, <code>dbt_run_id</code>, <code>completed_at</code></td></tr>
+    <tr><td><code>model_versions</code></td><td><code>version</code> PK, <code>training_date</code>, <code>performance_metrics</code> JSONB, <code>status</code> (shadow|active|retired), <code>promoted_at</code>, <code>retired_at</code></td></tr>
+  </table>
+
+  <!-- NEO4J -->
+  <h3 id="ref-neo4j" style="margin-top:40px">Neo4j — Clinical Knowledge Graph (v1.1.0)</h3>
+  <p>No PHI. Linked to Postgres only via vocabulary keys at application layer: <code>icd10_code</code>, <code>rxnorm_cui</code>, <code>loinc</code>, <code>nutrient_id</code>.</p>
+
+  <div class="card-grid cols2">
+    <div class="card accent-purple">
+      <h3>Node labels (shipped seed)</h3>
+      <table style="margin:0">
+        <tr><th>Label</th><th>Unique key</th><th>Properties</th></tr>
+        <tr><td><code>Nutrient</code></td><td><code>nutrient_id</code></td><td>name, form, rda, ear, ul, dose_unit, bioavailability_factor, loinc_codes[]</td></tr>
+        <tr><td><code>Condition</code></td><td><code>icd10_code</code></td><td>name, snomed_id</td></tr>
+        <tr><td><code>Medication</code></td><td><code>rxnorm_cui</code></td><td>name, drug_class</td></tr>
+        <tr><td><code>Evidence</code></td><td><code>doi_pmid</code></td><td>study_type, n, effect_size, grade_rating, year</td></tr>
+        <tr><td><code>Demographic</code></td><td><code>bucket_id</code></td><td>region, sex, age band — baseline prevalence buckets</td></tr>
+        <tr><td><code>Guideline</code></td><td>issuing_body + version</td><td>population, dose_override, monitoring</td></tr>
+        <tr><td><code>KGMetadata</code></td><td><code>id='current'</code></td><td>version (1.1.0), updated_at</td></tr>
+      </table>
+    </div>
+    <div class="card accent-teal">
+      <h3>Relationship types (implemented)</h3>
+      <table style="margin:0">
+        <tr><th>Type</th><th>From → To</th><th>Edge properties</th></tr>
+        <tr><td><code>INCREASES_DEMAND_FOR</code></td><td>Condition → Nutrient</td><td>lr, mechanism, onset_months</td></tr>
+        <tr><td><code>CAUSES_MALABSORPTION_OF</code></td><td>Condition → Nutrient</td><td>lr, mechanism</td></tr>
+        <tr><td><code>DEPLETES</code></td><td>Medication → Nutrient</td><td>lr, onset_months, severity</td></tr>
+        <tr><td><code>INTERACTS_WITH</code></td><td>Medication → Nutrient</td><td>severity, action, mechanism</td></tr>
+        <tr><td><code>ANTAGONIZES</code></td><td>Nutrient → Nutrient</td><td>mechanism, timing_note</td></tr>
+        <tr><td><code>SYNERGIZES_WITH</code></td><td>Nutrient → Nutrient</td><td>mechanism</td></tr>
+        <tr><td><code>HAS_BASELINE_RISK</code></td><td>Demographic → Nutrient</td><td>prevalence</td></tr>
+        <tr><td><code>RECOMMENDS</code></td><td>Guideline → Nutrient</td><td>dose, population, evidence_grade</td></tr>
+        <tr><td><code>CONTRAINDICATED_IN</code></td><td>Nutrient → Condition</td><td>severity, action (queried by SafetyEngine)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- REDIS + KAFKA -->
+  <h3 id="ref-redis-kafka" style="margin-top:40px">Redis Cache &amp; Kafka Topics</h3>
+  <div class="card-grid cols2">
+    <div class="card accent-gold">
+      <h3>Redis keys (<code>GraphClient</code>)</h3>
+      <table style="margin:0">
+        <tr><th>Key pattern</th><th>TTL</th><th>Content</th></tr>
+        <tr><td><code>nutrient:{nutrient_id}</code></td><td>1 h</td><td>JSON nutrient metadata</td></tr>
+        <tr><td><code>baseline:{nutrient_id}:{region}:{sex}:{age_group}</code></td><td>24 h</td><td>Baseline prevalence float</td></tr>
+        <tr><td><code>guideline:{nutrient_id}:{population}</code></td><td>24 h</td><td>Guideline override or <code>__none__</code></td></tr>
+      </table>
+    </div>
+    <div class="card accent-navy">
+      <h3>Kafka topics (<code>KAFKA_ENABLED=1</code>)</h3>
+      <table style="margin:0">
+        <tr><th>Topic</th><th>Trigger</th><th>Payload fields</th></tr>
+        <tr><td><code>patient.events</code></td><td>Lab append, med sync, condition sync</td><td>event_type, patient_id, timestamp, extra</td></tr>
+        <tr><td><code>recommendation.served</code></td><td>After successful score</td><td>session_id, patient_id, model_version, nutrient_ids[], requires_clinician, served_at</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- DIAGRAMS -->
+  <h3 id="ref-diagrams" style="margin-top:40px">Diagrams — ERD, Graph Model, Tech Stack, Pipeline</h3>
+
+  <h4 style="margin-top:16px">PostgreSQL entity relationship (shipped PHI model)</h4>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+erDiagram
+  PATIENTS ||--o{ PATIENT_CONDITIONS : has
+  PATIENTS ||--o{ PATIENT_MEDICATIONS : takes
+  PATIENTS ||--o{ PATIENT_LABS : has
+  PATIENTS ||--o{ RECOMMENDATION_SESSIONS : scored_in
+  PATIENTS ||--o{ RECOMMENDATIONS : receives
+  RECOMMENDATION_SESSIONS ||--o{ RECOMMENDATIONS : groups
+  RECOMMENDATIONS ||--o{ RECOMMENDATION_WARNINGS : may_have
+  RECOMMENDATIONS ||--o{ REC_FEEDBACK : receives
+  PATIENTS {
+    uuid patient_id PK
+    text hashed_mrn
+    int dob_year
+    text sex
+    text region_code
+    bool pregnancy_status
+    numeric bmi
+  }
+  RECOMMENDATION_SESSIONS {
+    text session_id PK
+    uuid patient_id FK
+    text model_version
+    jsonb drs_snapshot
+    bool requires_clinician
+  }
+  RECOMMENDATIONS {
+    uuid rec_id PK
+    text session_id
+    text nutrient_id
+    numeric confidence_score
+    text evidence_grade
+  }
+  AUDIT_LOG {
+    uuid id PK
+    text input_hash
+    jsonb output_summary
+  }
+  EVIDENCE_SNAPSHOTS {
+    text snapshot_id PK
+    text kg_commit_sha
+    jsonb contents
+  }
+    </div>
+  </div>
+
+  <h4 style="margin-top:24px">Neo4j knowledge graph model</h4>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart TB
+  subgraph clinical [Clinical KG - Neo4j v1.1.0]
+    N[Nutrient]
+    C[Condition]
+    M[Medication]
+    D[Demographic]
+    G[Guideline]
+    E[Evidence]
+  end
+  C -->|INCREASES_DEMAND_FOR| N
+  C -->|CAUSES_MALABSORPTION_OF| N
+  M -->|DEPLETES| N
+  M -->|INTERACTS_WITH| N
+  N -->|ANTAGONIZES| N
+  N -->|SYNERGIZES_WITH| N
+  D -->|HAS_BASELINE_RISK| N
+  G -->|RECOMMENDS| N
+  N -->|CONTRAINDICATED_IN| C
+    </div>
+  </div>
+
+  <h4 style="margin-top:24px">Technology interaction (request path)</h4>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart LR
+  Client[Client / EHR] --> API[FastAPI]
+  API --> PG[(PostgreSQL PHI)]
+  API --> Pipe[RecommendationPipeline]
+  Pipe --> Neo[(Neo4j KG)]
+  Pipe --> Redis[(Redis cache)]
+  Pipe --> Safety[SafetyEngine]
+  Pipe --> Pers[PersonalizationEngine]
+  Pipe --> PG
+  Pipe --> Audit[audit_log]
+  Pipe --> Snap[evidence_snapshots]
+  API --> KF{{Kafka optional}}
+  KF --> PE[patient.events]
+  KF --> RS[recommendation.served]
+    </div>
+  </div>
+
+  <h4 style="margin-top:24px">7-stage recommendation pipeline (shipped)</h4>
+  <div class="pipeline">
+    <div class="p-step"><div class="p-icon">1</div><h4>Intake</h4><p>Load PatientProfile from Postgres or inline JSON (dev)</p></div>
+    <div class="p-step"><div class="p-icon">2</div><h4>DRS</h4><p>Bayesian deficiency risk via Neo4j edges + rules</p></div>
+    <div class="p-step"><div class="p-icon">3</div><h4>Candidates</h4><p>Rank nutrients above threshold</p></div>
+    <div class="p-step"><div class="p-icon">4</div><h4>Safety</h4><p>Deterministic gate: CI, interactions, UL cap</p></div>
+    <div class="p-step"><div class="p-icon">5</div><h4>Dose</h4><p>RDA × risk × bioavailability, guideline override</p></div>
+    <div class="p-step"><div class="p-icon">6</div><h4>Explain</h4><p>Template rationale + evidence grade</p></div>
+    <div class="p-step"><div class="p-icon">7</div><h4>Persist</h4><p>Session, audit, snapshot, Kafka (optional)</p></div>
+  </div>
+
+  <!-- API CONTRACT -->
+  <h3 id="ref-api" style="margin-top:40px">API Contract (Shipped Endpoints)</h3>
+  <p>Production profile (<code>docker-compose.prod.yml</code>): <code>REQUIRE_API_KEY=1</code>, <code>ALLOW_INLINE_PATIENT=0</code>, header <code>X-API-Key</code>. Dev profile allows inline patient JSON for demos.</p>
+
+  <table>
+    <tr><th>Method</th><th>Path</th><th>Auth</th><th>Request</th><th>Response / side effects</th></tr>
+    <tr><td><span class="chip gray">GET</span></td><td><code>/health</code></td><td>None</td><td>—</td><td>200 if Neo4j + Postgres reachable</td></tr>
+    <tr><td><span class="chip gray">GET</span></td><td><code>/health/live</code></td><td>None</td><td>—</td><td>200 process alive (K8s liveness)</td></tr>
+    <tr><td><span class="chip gray">GET</span></td><td><code>/health/ready</code></td><td>None</td><td>—</td><td>200 if DBs + migrations ready</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td><code>/v1/recommendations</code></td><td>API key</td><td><code>{ patient_id, options? }</code> or inline <code>patient</code> (dev)</td><td>200 session + ranked recs; writes PG, audit, snapshot; Kafka <code>recommendation.served</code></td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td><code>/v1/patients/{id}/labs</code></td><td>API key</td><td><code>{ labs: [{ loinc, value, unit, collected_at? }] }</code></td><td>201 appended rows; Kafka <code>patient.events</code></td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td><code>/v1/patients/{id}/medications/sync</code></td><td>API key</td><td><code>{ medications: [{ rxnorm, name?, months_on? }] }</code></td><td>200 merge list; Kafka event</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td><code>/v1/patients/{id}/conditions/sync</code></td><td>API key</td><td><code>{ conditions: [{ code, system?, onset_date? }] }</code></td><td>200 merge list; Kafka event</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td><code>/v1/sessions/{session_id}</code></td><td>API key</td><td>—</td><td>Session + recommendations + warnings</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td><code>/v1/patients/{id}/history</code></td><td>API key</td><td><code>?limit=N</code></td><td>Recent sessions for patient</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td><code>/v1/feedback</code></td><td>API key</td><td><code>{ rec_id, action, source?, notes? }</code></td><td>202 accepted → <code>rec_feedback</code></td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td><code>/v1/audit/{session_id}</code></td><td>API key</td><td>—</td><td>Audit row with <code>input_hash</code></td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td><code>/v1/evidence/{snapshot_id}</code></td><td>API key</td><td>—</td><td>KG snapshot JSON at serve time</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td><code>/v1/safety/check</code></td><td>API key</td><td><code>?rxnorm=&amp;nutrient_id=</code></td><td>Interaction lookup via Neo4j</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td><code>/v1/nutrients/{nutrient_id}</code></td><td>API key</td><td>—</td><td>Nutrient metadata (Redis-backed)</td></tr>
+  </table>
+
+  <h4 style="margin-top:24px">POST /v1/recommendations — production request</h4>
+  <div class="code-block"><code>{
+  <span class="string">"patient_id"</span>: <span class="string">"aa10ca6d-25bd-4fa7-9fe8-22908f10bd8e"</span>,
+  <span class="string">"options"</span>: { <span class="string">"max_recommendations"</span>: <span class="number">6</span> }
+}</code></div>
+
+  <!-- SEQUENCE DIAGRAMS -->
+  <h3 id="ref-sequence" style="margin-top:40px">Sequence Diagrams (Shipped Paths)</h3>
+
+  <h4>Production: score by patient_id</h4>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant Client
+  participant API as FastAPI
+  participant PG as PostgreSQL
+  participant Pipe as RecommendationPipeline
+  participant KG as Neo4j
+  participant Redis as Redis
+  participant KF as Kafka
+
+  Client->>API: POST /v1/recommendations + X-API-Key
+  API->>PG: PatientRepository.get_for_scoring(patient_id)
+  PG-->>API: PatientProfile
+  API->>Pipe: run(profile)
+  Pipe->>KG: baseline, DEPLETES, guidelines
+  Pipe->>Redis: cache nutrient/baseline reads
+  Pipe->>Pipe: SafetyEngine + PersonalizationEngine
+  Pipe->>PG: save session, recommendations, audit, snapshot
+  Pipe->>KF: recommendation.served (if enabled)
+  API-->>Client: 200 ranked recommendations
+    </div>
+  </div>
+
+  <h4 style="margin-top:24px">Delta ingest: lab result + optional rescore</h4>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant EHR as EHR / LIS
+  participant API as FastAPI
+  participant PG as PostgreSQL
+  participant KF as Kafka
+
+  EHR->>API: POST /v1/patients/{id}/labs
+  API->>PG: append patient_labs rows
+  API->>KF: patient.events lab_added
+  API-->>EHR: 201 Created
+  Note over EHR,PG: Caller may follow with POST /v1/recommendations
+    </div>
+  </div>
+
+  <h4 style="margin-top:24px">External bulk feeder (out of repo)</h4>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant WH as Source warehouse
+  participant Feed as External feeder project
+  participant PG as PostgreSQL patient realm
+  participant Eng as This engine
+
+  WH->>Feed: nightly / incremental extract
+  Feed->>PG: UPSERT patients + conditions + meds + labs
+  Feed->>PG: record ingest_batches
+  Note over Eng,PG: Engine reads only — no bulk ETL in this repo
+  Eng->>PG: get_for_scoring on POST /v1/recommendations
+    </div>
+  </div>
+
+  <!-- UML pointer -->
+  <h3 id="ref-uml" style="margin-top:40px">UML Class Diagram</h3>
+  <p>Full class diagram for pipeline, repositories, and graph client is in <a href="#uml">Section 09 — UML Class Diagrams</a>. Shipped additions since Phase 1: <code>PersonalizationEngine</code> (flag <code>PERSONALIZATION_ENABLED</code>), <code>KafkaEventProducer</code>, API key middleware.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════ DATA INGESTION -->
+<div class="section" id="data-ingestion">
+  <div class="section-tag">Section 01c</div>
+  <h2>Data Ingestion Architecture</h2>
+  <p>The patient realm in PostgreSQL is fed by <strong>two ingress paths</strong>: an <strong>external bulk feeder</strong> (separate project writing directly to patient tables) and <strong>dynamic intake APIs</strong> in this engine (labs, meds, conditions). The recommendation engine consumes a single contract: frozen <span class="tag-inline">PatientProfile</span> objects loaded via repositories. It never queries an upstream warehouse or performs EHR joins at request time.</p>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+flowchart LR
+  subgraph sources [External Sources]
+    WH[Existing source system / warehouse]
+    EHR[EHR / LIS / FHIR]
+  end
+  subgraph ingest [Ingest Layer - Phase 2]
+    ETL[Airflow bulk ETL]
+    API[Intake APIs]
+    NORM[IntakeNormalizer]
+  end
+  subgraph stores [Canonical Stores]
+    STG[(staging.* raw)]
+    PG[(Postgres patient realm)]
+    NEO[(Neo4j KG)]
+  end
+  subgraph online [Online Scoring - Phase 1 shipped]
+    REC[POST /v1/recommendations]
+    PIPE[RecommendationPipeline]
+  end
+  WH --> ETL --> STG --> NORM --> PG
+  EHR --> API --> NORM
+  ETL --> NEO
+  REC --> PG
+  REC --> PIPE
+  PIPE --> PG
+  PIPE --> NEO
+    </div>
+  </div>
+
+  <h3 style="margin-top:28px">Path A: Bulk ETL (existing source system)</h3>
+  <p>For initial backfill and nightly refresh from your existing database (Postgres, SQL Server, Impala, or warehouse). Joins and preprocessing run in Airflow/dbt, not in the API.</p>
+  <div class="pipeline">
+    <div class="p-step"><div class="p-icon">&#128230;</div><h4>Extract</h4><p>Pull demographics, conditions, meds, labs from source DB</p></div>
+    <div class="p-step"><div class="p-icon">&#128736;</div><h4>Stage</h4><p>Load into staging.* with source_system, batch_id, extracted_at</p></div>
+    <div class="p-step"><div class="p-icon">&#128260;</div><h4>Normalize</h4><p>Shared IntakeNormalizer: RxNorm, ICD-10, LOINC, units</p></div>
+    <div class="p-step"><div class="p-icon">&#128100;</div><h4>Identity</h4><p>hashed_mrn = SHA-256(source_system:mrn) maps to patient_id UUID</p></div>
+    <div class="p-step"><div class="p-icon">&#128190;</div><h4>Merge</h4><p>Upsert into patients, conditions, meds; append labs</p></div>
+  </div>
+
+  <h3 style="margin-top:24px">Path B: Dynamic intake (realtime APIs)</h3>
+  <p>For intraday deltas: new lab results, medication changes, FHIR webhooks. Same normalizer, same Postgres tables, same merge rules.</p>
+  <table>
+    <tr><th>Endpoint (Phase 2)</th><th>Trigger</th><th>Writes</th></tr>
+    <tr><td><code>POST /v1/patients/{id}/labs/ingest</code></td><td>FHIR Observation / HL7 ORU</td><td>Append <code>patient_labs</code></td></tr>
+    <tr><td><code>POST /v1/patients/{id}/medications/sync</code></td><td>Med list change</td><td>Merge <code>patient_medications</code></td></tr>
+    <tr><td><code>POST /v1/labs/parse</code></td><td>Parse-only; caller persists</td><td>Returns normalized <code>LabResult[]</code></td></tr>
+    <tr><td><code>POST /v1/patients</code></td><td>New patient registration</td><td>Insert <code>patients</code> + identity</td></tr>
+  </table>
+
+  <h3 style="margin-top:24px">Merge semantics (bulk + API must agree)</h3>
+  <div class="callout warn">
+    <p>Phase 1 <code>PatientRepository.upsert()</code> replaces all child records on update. Phase 2 introduces <code>merge_from_source()</code> with source-aware rules so bulk nightly loads and intraday API writes do not clobber each other.</p>
+  </div>
+  <table>
+    <tr><th>Entity</th><th>Merge rule</th><th>Notes</th></tr>
+    <tr><td>Demographics</td><td>Latest wins by source priority or updated_at</td><td>bmi, pregnancy_status, region_code, lifestyle flags</td></tr>
+    <tr><td>Conditions</td><td>Upsert by (patient_id, icd10_code, onset_date)</td><td><code>source</code>: warehouse / ehr / self / clinician</td></tr>
+    <tr><td>Medications</td><td>Upsert by (patient_id, rxnorm_cui, start_date)</td><td>Mark stopped if absent from bulk snapshot</td></tr>
+    <tr><td>Labs</td><td>Append only</td><td>Key: (patient_id, loinc, collected_at); never delete history on refresh</td></tr>
+  </table>
+
+  <h3 style="margin-top:24px">Knowledge graph ingestion (separate from patient realm)</h3>
+  <p>Neo4j is fed by batch processes only: initial <code>neo4j_seed.cypher</code> (v1.1.0 shipped), then weekly evidence Airflow DAG (Phase 2). Patient ETL never writes clinical LR edges directly without curator approval.</p>
+
+  <h3 style="margin-top:24px">Production recommendation request</h3>
+  <div class="code-block"><code><span class="comment"># Target production request (Phase 2)</span>
+POST /v1/recommendations
+{
+  <span class="string">"patient_id"</span>: <span class="string">"aa10ca6d-25bd-4fa7-9fe8-22908f10bd8e"</span>,
+  <span class="string">"options"</span>: { <span class="string">"max_recommendations"</span>: <span class="number">6</span> }
+}
+
+<span class="comment"># Flow: load PatientProfile from Postgres -> pipeline -> persist session + audit</span>
+<span class="comment"># Dev/demo (Phase 1, still supported): inline patient JSON upserts then scores</span></code></div>
+
+  <h3 style="margin-top:24px">Event bus (decouple systems)</h3>
+  <table>
+    <tr><th>Kafka topic</th><th>Published when</th><th>Consumers</th></tr>
+    <tr><td><code>patient.events</code></td><td>After bulk batch merge or API ingest</td><td>Feature builder, optional auto re-score</td></tr>
+    <tr><td><code>recommendation.served</code></td><td>After session saved</td><td>OLAP ETL, analytics, audit mirror</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════ RULE ENGINE INTEGRATION -->
+<div class="section" id="rule-engine">
+  <div class="section-tag">Section 02</div>
+  <h2>Rule Engine Integration &amp; Enhancement</h2>
+
+  <p>Your existing codebase is directly usable — and maps cleanly onto the supplement engine architecture. Here is the exact fit and where to extend.</p>
+
+  <div class="card-grid cols2">
+    <div class="card accent-teal">
+      <h3>Phase 1 delivered (in repo)</h3>
+      <ul style="font-size:13px;color:var(--ink2);padding-left:16px;line-height:2">
+        <li>Bayesian log-odds DRS (<span class="tag-inline">DeficiencyRiskScorer</span>)</li>
+        <li>Neo4j LR edge traversal via <span class="tag-inline">GraphClient</span></li>
+        <li>Drug-nutrient + disease contraindication safety gate</li>
+        <li>70% UL cap + escalation triggers</li>
+        <li>Lab likelihood-ratio override (80% weight when present)</li>
+        <li>Confidence compositor (E·D·S·P·M·Bayes formula)</li>
+        <li>Evidence snapshot versioning (<code>kg-1.1.0-{session}</code>)</li>
+        <li>KSA geographic priors (Vit D, veiling, indoor occupation)</li>
+        <li>Redis-cached KG reads; Alembic schema migrations</li>
+      </ul>
+    </div>
+    <div class="card accent-gold">
+      <h3>Phase 2+ (your OptimizedRuleEngine + extensions)</h3>
+      <ul style="font-size:13px;color:var(--ink2);padding-left:16px;line-height:2">
+        <li>Wire <span class="tag-inline">OptimizedRuleEngine</span> as vectorized cohort substrate</li>
+        <li>Multi-DB adapter for bulk patient ETL from source warehouse</li>
+        <li><span class="tag-inline">RuleMetadataEngine</span> for JSON rule authoring</li>
+        <li>PersonalizationEngine Bayesian individual update</li>
+        <li>LightGBM dose-response (Phase 3, +/-30% band)</li>
+        <li>Feast feature store for reproducible retraining features</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Actual domain structure (shipped)</h3>
+  <p>The repository uses frozen dataclasses in <span class="tag-inline">src/shared/models.py</span> as the single contract. ORM objects stay inside repositories only.</p>
+
+  <div class="code-block"><code><span class="comment"># Shipped layout (Phase 1)</span>
+supplement_engine/
+├── src/
+│   ├── shared/models.py              <span class="comment"># PatientProfile, Candidate, DRS, etc.</span>
+│   ├── knowledge/graph_client.py     <span class="comment"># All Cypher; Redis cache</span>
+│   ├── core/
+│   │   ├── deficiency_risk_scorer.py
+│   │   └── candidate_generator.py    <span class="comment"># DoseOptimizer + ConfidenceCompositor</span>
+│   ├── safety/safety_engine.py       <span class="comment"># Deterministic gate (Python)</span>
+│   ├── explain/explain_service.py
+│   ├── db/repositories.py            <span class="comment"># PatientRepository, EvidenceSnapshot, etc.</span>
+│   ├── pipelines/recommendation_pipeline.py
+│   ├── api/app.py
+│   └── intake/                       <span class="comment"># Phase 2: IntakeNormalizer + merge</span>
+├── scripts/neo4j_seed.cypher         <span class="comment"># KG v1.1.0</span>
+├── alembic/versions/                 <span class="comment"># Schema migrations</span>
+└── tests/integration/                <span class="comment"># 6 e2e scenarios vs Docker stack</span></code></div>
+</div>
+
+<!-- ══════════════════════════════════════════════ ENTITIES -->
+<div class="section" id="entities">
+  <div class="section-tag">Section 03</div>
+  <h2>Entity Definitions</h2>
+  <p>Conceptual entity cards below. <strong>Authoritative column-level schema:</strong> <a href="#ref-postgres">Engine Reference — Postgres</a> and <a href="#ref-neo4j">Neo4j graph</a>.</p>
+
+  <h3>Patient Domain</h3>
+  <div class="entity-grid">
+    <div class="entity">
+      <div class="entity-head"><h4>Patient</h4><span class="tag">patients</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">patient_id</span><span class="field-type">UUID PK</span><span class="field-note">Pseudonymized PHI</span></div>
+        <div class="field-row"><span class="field-name">hashed_mrn</span><span class="field-type">TEXT UNIQUE</span><span class="field-note">SHA-256(source_system:mrn) for bulk ETL identity resolution</span></div>
+        <div class="field-row"><span class="field-name">dob_year</span><span class="field-type">INT</span><span class="field-note">Year only for de-identification</span></div>
+        <div class="field-row"><span class="field-name">sex</span><span class="field-type">ENUM</span><span class="field-note">M/F/Other</span></div>
+        <div class="field-row"><span class="field-name">region_code</span><span class="field-type">TEXT</span><span class="field-note">ISO 3166-2 (SA-01 = Riyadh)</span></div>
+        <div class="field-row"><span class="field-name">pregnancy_status</span><span class="field-type">BOOL</span><span class="field-note">Triggers guideline overrides</span></div>
+        <div class="field-row"><span class="field-name">consent_version</span><span class="field-type">TEXT</span><span class="field-note">Regulatory consent tracking</span></div>
+      </div>
+    </div>
+    <div class="entity">
+      <div class="entity-head"><h4>PatientCondition</h4><span class="tag">patient_conditions</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">UUID PK</span><span class="field-note"></span></div>
+        <div class="field-row"><span class="field-name">patient_id</span><span class="field-type">UUID FK</span><span class="field-note">→ Patient</span></div>
+        <div class="field-row"><span class="field-name">icd10_code</span><span class="field-type">TEXT</span><span class="field-note">e.g. E11.9 (T2DM)</span></div>
+        <div class="field-row"><span class="field-name">snomed_id</span><span class="field-type">BIGINT</span><span class="field-note">Normalized to SNOMED CT</span></div>
+        <div class="field-row"><span class="field-name">onset_date</span><span class="field-type">DATE</span><span class="field-note">For duration factor calc</span></div>
+        <div class="field-row"><span class="field-name">source</span><span class="field-type">ENUM</span><span class="field-note">self / ehr / clinician / warehouse (Phase 2)</span></div>
+      </div>
+    </div>
+    <div class="entity">
+      <div class="entity-head"><h4>PatientMedication</h4><span class="tag">patient_medications</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">UUID PK</span><span class="field-note"></span></div>
+        <div class="field-row"><span class="field-name">patient_id</span><span class="field-type">UUID FK</span><span class="field-note">→ Patient</span></div>
+        <div class="field-row"><span class="field-name">rxnorm_cui</span><span class="field-type">TEXT</span><span class="field-note">Normalized drug code</span></div>
+        <div class="field-row"><span class="field-name">dose_mg</span><span class="field-type">DECIMAL</span><span class="field-note">For severity calculation</span></div>
+        <div class="field-row"><span class="field-name">months_on</span><span class="field-type">INT</span><span class="field-note">Duration factor for depletion LR</span></div>
+        <div class="field-row"><span class="field-name">start_date</span><span class="field-type">DATE</span><span class="field-note"></span></div>
+      </div>
+    </div>
+    <div class="entity">
+      <div class="entity-head"><h4>PatientLab</h4><span class="tag">patient_labs</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">id</span><span class="field-type">UUID PK</span><span class="field-note"></span></div>
+        <div class="field-row"><span class="field-name">patient_id</span><span class="field-type">UUID FK</span><span class="field-note">→ Patient</span></div>
+        <div class="field-row"><span class="field-name">loinc</span><span class="field-type">TEXT</span><span class="field-note">e.g. 1989-3 (25-OHD)</span></div>
+        <div class="field-row"><span class="field-name">value_num</span><span class="field-type">DECIMAL</span><span class="field-note">Numeric result</span></div>
+        <div class="field-row"><span class="field-name">unit</span><span class="field-type">TEXT</span><span class="field-note">ng/mL, mmol/L etc.</span></div>
+        <div class="field-row"><span class="field-name">flagged</span><span class="field-type">BOOL</span><span class="field-note">Lab-flagged abnormal</span></div>
+        <div class="field-row"><span class="field-name">collected_at</span><span class="field-type">TIMESTAMP</span><span class="field-note">For recency weighting</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Knowledge Graph Domain (Neo4j Nodes)</h3>
+  <div class="entity-grid">
+    <div class="entity">
+      <div class="entity-head"><h4>Nutrient</h4><span class="tag">Neo4j node</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">nutrient_id</span><span class="field-type">STRING</span><span class="field-note">e.g. vit_d3</span></div>
+        <div class="field-row"><span class="field-name">name</span><span class="field-type">STRING</span><span class="field-note">Vitamin D3</span></div>
+        <div class="field-row"><span class="field-name">form</span><span class="field-type">STRING</span><span class="field-note">cholecalciferol vs ergocalciferol</span></div>
+        <div class="field-row"><span class="field-name">rda</span><span class="field-type">FLOAT</span><span class="field-note">Per demographic bucket</span></div>
+        <div class="field-row"><span class="field-name">ul</span><span class="field-type">FLOAT</span><span class="field-note">IOM/EFSA upper limit</span></div>
+        <div class="field-row"><span class="field-name">bioavailability_factor</span><span class="field-type">FLOAT</span><span class="field-note">Form-specific absorption rate</span></div>
+      </div>
+    </div>
+    <div class="entity">
+      <div class="entity-head"><h4>Evidence</h4><span class="tag">Neo4j node</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">doi_pmid</span><span class="field-type">STRING</span><span class="field-note">Primary citation key</span></div>
+        <div class="field-row"><span class="field-name">study_type</span><span class="field-type">ENUM</span><span class="field-note">RCT / meta / cohort / CPG</span></div>
+        <div class="field-row"><span class="field-name">n</span><span class="field-type">INT</span><span class="field-note">Sample size</span></div>
+        <div class="field-row"><span class="field-name">effect_size</span><span class="field-type">FLOAT</span><span class="field-note">Standardized effect</span></div>
+        <div class="field-row"><span class="field-name">grade_rating</span><span class="field-type">FLOAT</span><span class="field-note">GRADE weight 0.15–1.00</span></div>
+        <div class="field-row"><span class="field-name">year</span><span class="field-type">INT</span><span class="field-note">For recency tiebreak</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Staging Domain (Phase 2 bulk ETL)</h3>
+  <div class="entity-grid">
+    <div class="entity">
+      <div class="entity-head"><h4>PatientStagingRaw</h4><span class="tag">staging.*</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">source_system</span><span class="field-type">TEXT</span><span class="field-note">e.g. hospital_dw, legacy_rules_db</span></div>
+        <div class="field-row"><span class="field-name">source_patient_key</span><span class="field-type">TEXT</span><span class="field-note">MRN or surrogate from source</span></div>
+        <div class="field-row"><span class="field-name">batch_id</span><span class="field-type">TEXT</span><span class="field-note">Airflow run id</span></div>
+        <div class="field-row"><span class="field-name">extracted_at</span><span class="field-type">TIMESTAMP</span><span class="field-note">When ETL pulled row</span></div>
+        <div class="field-row"><span class="field-name">payload_json</span><span class="field-type">JSONB</span><span class="field-note">Raw row before normalization</span></div>
+      </div>
+    </div>
+    <div class="entity">
+      <div class="entity-head"><h4>EvidenceSnapshot</h4><span class="tag">evidence_snapshots</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">snapshot_id</span><span class="field-type">TEXT PK</span><span class="field-note">kg-1.1.0-{session_prefix}</span></div>
+        <div class="field-row"><span class="field-name">kg_commit_sha</span><span class="field-type">TEXT</span><span class="field-note">Neo4j KG version at serve time</span></div>
+        <div class="field-row"><span class="field-name">contents</span><span class="field-type">JSONB</span><span class="field-note">Nutrient count, edge stats (Phase 1 shipped)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Rule Engine Domain (future cohort evaluation)</h3>
+  <div class="entity-grid">
+    <div class="entity">
+      <div class="entity-head"><h4>RuleVersion</h4><span class="tag">rule_versions</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">rule_version_id</span><span class="field-type">INT PK</span><span class="field-note">Passed to main.py as arg</span></div>
+        <div class="field-row"><span class="field-name">rule_id</span><span class="field-type">INT FK</span><span class="field-note">→ Rule</span></div>
+        <div class="field-row"><span class="field-name">nutrient_id</span><span class="field-type">TEXT</span><span class="field-note">Which nutrient this rule evaluates</span></div>
+        <div class="field-row"><span class="field-name">evidence_snapshot_id</span><span class="field-type">TEXT</span><span class="field-note">KG commit SHA at creation time</span></div>
+        <div class="field-row"><span class="field-name">time_bound</span><span class="field-type">BOOL</span><span class="field-note">Expiry-aware evaluation</span></div>
+        <div class="field-row"><span class="field-name">model_version</span><span class="field-type">TEXT</span><span class="field-note">Semver for reproducibility</span></div>
+      </div>
+    </div>
+    <div class="entity">
+      <div class="entity-head"><h4>Recommendation</h4><span class="tag">recommendations</span></div>
+      <div class="entity-fields">
+        <div class="field-row"><span class="field-name">rec_id</span><span class="field-type">UUID PK</span><span class="field-note">Immutable after write</span></div>
+        <div class="field-row"><span class="field-name">patient_id</span><span class="field-type">UUID FK</span><span class="field-note">→ Patient</span></div>
+        <div class="field-row"><span class="field-name">nutrient_id</span><span class="field-type">TEXT</span><span class="field-note">→ Nutrient (KG ref)</span></div>
+        <div class="field-row"><span class="field-name">dose_recommended</span><span class="field-type">DECIMAL</span><span class="field-note">After UL cap + bioavail adjust</span></div>
+        <div class="field-row"><span class="field-name">confidence_score</span><span class="field-type">FLOAT</span><span class="field-note">0–1 composite score C</span></div>
+        <div class="field-row"><span class="field-name">evidence_grade</span><span class="field-type">TEXT</span><span class="field-note">A / B / C / D</span></div>
+        <div class="field-row"><span class="field-name">requires_clinician</span><span class="field-type">BOOL</span><span class="field-note">Escalation trigger flag</span></div>
+        <div class="field-row"><span class="field-name">served_at</span><span class="field-type">TIMESTAMP</span><span class="field-note">Audit timestamp</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ ERD -->
+<div class="section" id="erd">
+  <div class="section-tag">Section 04</div>
+  <h2>Entity Relationship Diagram</h2>
+  <p>Shipped Postgres PHI model (12 tables). Full column reference: <a href="#ref-postgres">Engine Reference — Postgres schema</a>. Legacy rule-engine tables below remain design targets for Phase 3+.</p>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid" id="main-erd">
+erDiagram
+  PATIENTS ||--o{ PATIENT_CONDITIONS : has
+  PATIENTS ||--o{ PATIENT_MEDICATIONS : takes
+  PATIENTS ||--o{ PATIENT_LABS : has
+  PATIENTS ||--o{ RECOMMENDATION_SESSIONS : scored_in
+  PATIENTS ||--o{ RECOMMENDATIONS : receives
+  RECOMMENDATION_SESSIONS ||--o{ RECOMMENDATIONS : groups
+  RECOMMENDATIONS ||--o{ RECOMMENDATION_WARNINGS : may_have
+  RECOMMENDATIONS ||--o{ REC_FEEDBACK : receives
+  PATIENTS {
+    uuid patient_id PK
+    text hashed_mrn
+    int dob_year
+    text sex
+    text region_code
+    bool pregnancy_status
+    numeric bmi
+  }
+  PATIENT_CONDITIONS {
+    uuid id PK
+    uuid patient_id FK
+    text icd10_code
+    text source
+  }
+  PATIENT_MEDICATIONS {
+    uuid id PK
+    uuid patient_id FK
+    text rxnorm_cui
+    int months_on
+  }
+  PATIENT_LABS {
+    uuid id PK
+    uuid patient_id FK
+    text loinc
+    decimal value_num
+    timestamp collected_at
+  }
+  RECOMMENDATION_SESSIONS {
+    text session_id PK
+    uuid patient_id FK
+    jsonb drs_snapshot
+    bool requires_clinician
+  }
+  RECOMMENDATIONS {
+    uuid rec_id PK
+    text session_id
+    text nutrient_id
+    numeric confidence_score
+  }
+  AUDIT_LOG {
+    uuid id PK
+    text input_hash
+    jsonb output_summary
+  }
+  EVIDENCE_SNAPSHOTS {
+    text snapshot_id PK
+    jsonb contents
+  }
+    </div>
+  </div>
+
+  <div id="kg-erd" class="mermaid-wrap" style="margin-top:20px">
+    <h3 style="font-size:14px;margin-bottom:12px;color:var(--ink3)">Knowledge Graph Relationships (Neo4j edges)</h3>
+    <div class="mermaid">
+erDiagram
+  CONDITION {
+    text icd10_code
+    text snomed_id
+    text name
+  }
+  NUTRIENT {
+    text nutrient_id
+    text name
+    text form
+    float rda
+    float ul
+  }
+  MEDICATION {
+    text rxnorm_cui
+    text atc_code
+    text ingredient
+  }
+  EVIDENCE {
+    text doi_pmid
+    text study_type
+    int n
+    float grade_weight
+  }
+  DEMOGRAPHIC {
+    text bucket_id
+    float baseline_prevalence
+  }
+  GUIDELINE {
+    text issuing_body
+    text version
+    text strength
+  }
+
+  CONDITION ||--o{ NUTRIENT : "INCREASES_DEMAND_FOR"
+  CONDITION ||--o{ NUTRIENT : "CAUSES_MALABSORPTION_OF"
+  MEDICATION ||--o{ NUTRIENT : "DEPLETES"
+  MEDICATION ||--o{ NUTRIENT : "INTERACTS_WITH"
+  NUTRIENT ||--o{ NUTRIENT : "ANTAGONIZES"
+  NUTRIENT ||--o{ NUTRIENT : "SYNERGIZES_WITH"
+  EVIDENCE ||--o{ NUTRIENT : "SUPPORTS"
+  DEMOGRAPHIC ||--o{ NUTRIENT : "HAS_BASELINE_RISK"
+  GUIDELINE ||--o{ NUTRIENT : "RECOMMENDS"
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ RELATIONSHIPS -->
+<div class="section" id="relationships">
+  <div class="section-tag">Section 05</div>
+  <h2>Key Relationships</h2>
+
+  <table>
+    <tr><th>Relationship</th><th>Type</th><th>Cardinality</th><th>Key Properties</th></tr>
+    <tr><td>Patient → Condition</td><td>has</td><td>1:N</td><td>onset_date, source, severity_axis</td></tr>
+    <tr><td>Patient → Medication</td><td>takes</td><td>1:N</td><td>months_on (drives duration_factor for LR), dose_mg</td></tr>
+    <tr><td>Patient → Lab</td><td>has</td><td>1:N</td><td>loinc, collected_at (recency matters for override)</td></tr>
+    <tr><td>Source system → Patient realm</td><td>feeds (bulk or API)</td><td>N:1</td><td>staging → IntakeNormalizer → merge; hashed_mrn identity</td></tr>
+    <tr><td>Patient realm → Pipeline</td><td>read at score time</td><td>1:1</td><td>PatientProfile loaded by patient_id; no warehouse joins</td></tr>
+    <tr><td>Patient → Recommendation</td><td>receives</td><td>1:N per session</td><td>session_id groups a run; immutable after served_at</td></tr>
+    <tr><td>Recommendation → Warning</td><td>has</td><td>1:N</td><td>severity: contraindicated / major / moderate / minor</td></tr>
+    <tr><td>Recommendation → AuditLog</td><td>logged in</td><td>1:N</td><td>append-only, evidence_snapshot JSONB, 7-year retention</td></tr>
+    <tr><td>RuleVersion → RuleAttribute</td><td>defines</td><td>1:N</td><td>condition_set_id groups AND conditions; cross-set = OR</td></tr>
+    <tr><td>Condition → Nutrient (KG)</td><td>INCREASES_DEMAND_FOR</td><td>M:N</td><td>lr, evidence_ids, grade (e.g. T2DM → Vit D: LR 1.6)</td></tr>
+    <tr><td>Medication → Nutrient (KG)</td><td>DEPLETES</td><td>M:N</td><td>lr, onset_months (Metformin → B12: LR 2.4, onset 12mo)</td></tr>
+    <tr><td>Nutrient → Nutrient (KG)</td><td>ANTAGONIZES</td><td>M:N</td><td>mechanism, timing (Ca↔Fe: separate by 2h)</td></tr>
+    <tr><td>Evidence → Edge (KG)</td><td>SUPPORTS (reified)</td><td>M:N</td><td>Reification pattern: every clinical claim traceable to citation</td></tr>
+    <tr><td>Recommendation → Feedback</td><td>receives</td><td>1:N</td><td>source: clinician/user; action: accepted/rejected/AE</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════ USER STORIES -->
+<div class="section" id="user-stories">
+  <div class="section-tag">Section 06</div>
+  <h2>User Stories</h2>
+
+  <h3>Patient (Consumer)</h3>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-01</span><span class="story-role">As a patient with T2DM and a new metformin prescription</span></div>
+    <p>I want the engine to automatically recognize that metformin depletes B12 and recommend a monitored supplement, so that I don't develop a deficiency without knowing.</p>
+    <ul><li>Given: patient_medication has rxnorm_cui for metformin with months_on ≥ 3</li><li>When: evaluate() is called</li><li>Then: B12 candidate appears with confidence ≥ 0.80 and rationale citing metformin depletion</li></ul>
+  </div>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-02</span><span class="story-role">As a pregnant patient in Riyadh</span></div>
+    <p>I want folate, iron, iodine, choline, and DHA forced into my recommendations at guideline doses, and high-dose retinol blocked, so that my fetal development is protected.</p>
+    <ul><li>Given: pregnancy_status = true, region_code = SA-01</li><li>Then: ACOG/WHO pregnancy guideline overrides fire; retinol &gt; 3000 µg RAE blocked absolutely</li></ul>
+  </div>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-03</span><span class="story-role">As a patient with CKD Stage 4</span></div>
+    <p>I want potassium and magnesium supplements blocked and a clinician escalation triggered, so I don't inadvertently worsen hyperkalemia.</p>
+    <ul><li>Given: patient_condition icd10_code = N18 with stage ≥ 4</li><li>Then: K and Mg recommendations suppressed; requires_clinician = true returned in session</li></ul>
+  </div>
+
+  <h3 style="margin-top:20px">Clinician</h3>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-04</span><span class="story-role">As an endocrinologist reviewing a patient dashboard</span></div>
+    <p>I want to see the full evidence trace for each recommendation — GRADE rating, sample size, and source guideline — so I can decide whether to accept, modify, or reject it.</p>
+    <ul><li>GET /v1/evidence/{snapshot_id} returns KG snapshot within p95 &lt; 100ms</li><li>Each session links to evidence_snapshot_id (immutable KG state at time of recommendation)</li></ul>
+  </div>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-05</span><span class="story-role">As a clinician overriding an AI recommendation</span></div>
+    <p>I want my override captured in the feedback loop so it retrains the Bayesian priors for similar patient profiles over time.</p>
+    <ul><li>POST /v1/feedback with action = "rejected" or "modified" + notes</li><li>Override feeds nightly retraining pipeline → next week's priors shift</li></ul>
+  </div>
+
+  <h3 style="margin-top:20px">Data / ML Engineer</h3>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-06</span><span class="story-role">As an ML engineer running a new rule version</span></div>
+    <p>I want to create a new rule from a JSON definition and immediately evaluate it against a patient cohort, getting performance metrics vs the previous version.</p>
+    <ul><li>python cli.py create --input-file rule.json → returns rule_version_id</li><li>python cli.py execute {rule_version_id} → runs OptimizedRuleEngine; PerformanceBenchmark compares</li></ul>
+  </div>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-07</span><span class="story-role">As a data analyst building a deficiency prevalence map</span></div>
+    <p>I want a de-identified aggregate view of which nutrients are most flagged per ICD-10 condition per region, so the public health team can target interventions.</p>
+    <ul><li>OLAP mart: fact_recommendations × dim_condition × dim_region → prevalence cube</li><li>Anonymized: no patient_id in mart; aggregated at bucket_id level (age/sex/region)</li></ul>
+  </div>
+
+  <h3 style="margin-top:20px">System / Compliance</h3>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-08</span><span class="story-role">As a compliance officer preparing for SFDA SaMD audit</span></div>
+    <p>I want every recommendation output to be reproducible from its evidence_snapshot_id and model_version, with a full audit trail, so regulators can reconstruct any historical decision.</p>
+    <ul><li>evidence_snapshots table stores KG commit SHA + JSONB contents at serve time</li><li>Audit log: append-only, 7-year retention, includes input hash, model version, output diff</li></ul>
+  </div>
+
+  <h3 style="margin-top:20px">Data Engineering / Ingest</h3>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-09</span><span class="story-role">As a data engineer syncing patients from our existing warehouse</span></div>
+    <p>I want nightly bulk ETL to load demographics, conditions, medications, and labs into the patient realm using the same normalized schema as realtime APIs, so the recommendation engine can score by patient_id without duplicating ingest logic.</p>
+    <ul><li>Given: Airflow dag_patient_bulk_sync extracts from source DB</li><li>When: rows are normalized and merged via hashed_mrn</li><li>Then: POST /v1/recommendations with patient_id returns recommendations using bulk-loaded data</li></ul>
+  </div>
+  <div class="story">
+    <div class="story-head"><span class="story-id">US-10</span><span class="story-role">As a lab interface sending a new Vit D result mid-day</span></div>
+    <p>I want to append a lab via the intake API before the next bulk run, so recommendations reflect today's result without waiting for nightly ETL.</p>
+    <ul><li>Given: patient exists from bulk load</li><li>When: POST /v1/patients/{id}/labs/ingest with LOINC 1989-3</li><li>Then: patient_labs appended; subsequent recommendation uses new value</li></ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SERVICES -->
+<div class="section" id="services">
+  <div class="section-tag">Section 07</div>
+  <h2>Service Catalogue &amp; Functions</h2>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-rt">INGEST</span> IntakeNormalizer + PatientRepository</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:10px">Shared write path for bulk ETL and realtime APIs. Phase 2. <code>get()</code> shipped in Phase 1.</p>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Signature</th><th>Description</th></tr>
+      <tr><td><code>normalize()</code></td><td><code>(raw_row, source_system) → PatientProfile</code></td><td>RxNorm, ICD-10, LOINC, unit conversion</td></tr>
+      <tr><td><code>merge_from_source()</code></td><td><code>(profile, source, batch_id?) → UUID</code></td><td>Source-aware merge; append labs, upsert conditions/meds</td></tr>
+      <tr><td><code>resolve_identity()</code></td><td><code>(source_system, source_key) → patient_id</code></td><td>Lookup or create via hashed_mrn</td></tr>
+      <tr><td><code>get()</code></td><td><code>(patient_id) → PatientProfile</code></td><td>Load full profile for recommendation (Phase 1)</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-olap">CORE</span> DeficiencyRiskScorer</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:10px">Bayesian log-odds DRS in Python. Computes posterior P(deficient | patient) for each nutrient. Phase 1 shipped.</p>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Signature</th><th>Description</th></tr>
+      <tr><td><code>score()</code></td><td><code>score(patient: PatientProfile, nutrient_id: str) → DRS</code></td><td>Returns p_deficient + contributors trace for explainability</td></tr>
+      <tr><td><code>score_all()</code></td><td><code>score_all(patient: PatientProfile, kg: GraphClient) → Dict[str, DRS]</code></td><td>Vectorized batch across all nutrients via OptimizedRuleEngine</td></tr>
+      <tr><td><code>_apply_lab_override()</code></td><td><code>(logit_p, lab: LabResult) → float</code></td><td>Lab weight 0.8 overrides prior when present</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-olap">CORE</span> CandidateGenerator</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:10px">Produces supplement candidates where DRS ≥ threshold OR a matching guideline fires.</p>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Signature</th><th>Description</th></tr>
+      <tr><td><code>generate()</code></td><td><code>generate(patient, kg, threshold=0.35) → List[Candidate]</code></td><td>AND logic within condition_set; OR across condition_sets (mirrors your engine)</td></tr>
+      <tr><td><code>collapse_b_vitamins()</code></td><td><code>(candidates) → List[Candidate]</code></td><td>If ≥3 B-vitamins → replace with B-complex candidate</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge" style="background:#fcebeb;color:var(--ruby)">SAFETY</span> SafetyEngine</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:10px">Deterministic Python gate. Runs as final stage after dose optimization. Phase 1 shipped.</p>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Signature</th><th>Description</th></tr>
+      <tr><td><code>enforce_ul()</code></td><td><code>(rec: Recommendation) → Recommendation</code></td><td>Caps dose at 70% UL; raises SafetyBlock if dose > UL</td></tr>
+      <tr><td><code>check_drug_interactions()</code></td><td><code>(candidates, medications) → FilterResult</code></td><td>Four-tier: contraindicated/major/moderate/minor</td></tr>
+      <tr><td><code>check_contraindications()</code></td><td><code>(candidates, conditions) → FilterResult</code></td><td>Hemochromatosis+Fe, CKD4+K, SSRI+St.John's Wort, etc.</td></tr>
+      <tr><td><code>should_escalate()</code></td><td><code>(session: Session) → bool</code></td><td>Checks 10 escalation triggers; sets requires_clinician</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-teal">ML</span> PersonalizationEngine</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:10px">Three-layer personalization: demographic priors → phenotype modifiers → individual evidence update.</p>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Signature</th><th>Description</th></tr>
+      <tr><td><code>apply_demographic_prior()</code></td><td><code>(nutrient_id, patient) → float</code></td><td>Vit D: applies veiling LR 2.2, indoor LR 1.5, age LR 1.7 etc.</td></tr>
+      <tr><td><code>optimize_dose()</code></td><td><code>(candidate, patient, kg) → Dose</code></td><td>RDA × risk × guideline_override / bioavailability_factor, capped at 0.7×UL</td></tr>
+      <tr><td><code>bayesian_update()</code></td><td><code>(prior, lab_value, assay_variance) → posterior</code></td><td>Gaussian conjugate update when lab available</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-olap">EVIDENCE</span> EvidenceService</h3>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>get_claim_citations(claim_id)</code></td><td>Returns citation graph for a specific recommendation claim</td></tr>
+      <tr><td><code>compute_confidence(candidate)</code></td><td>C = 0.40·E + 0.15·D + 0.15·S + 0.10·P + 0.10·M + 0.10·bayes</td></tr>
+      <tr><td><code>snapshot_evidence(session_id)</code></td><td>Captures KG commit SHA + evidence state → evidence_snapshots table</td></tr>
+      <tr><td><code>resolve_conflict(edges)</code></td><td>Hierarchy → recency → population concordance → IVW pooling</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-olap">EXPLAIN</span> ExplainService</h3>
+    <table style="margin:0">
+      <tr><th>Method</th><th>Description</th></tr>
+      <tr><td><code>render_why(recommendation, drs_trace)</code></td><td>Template slot-fill: condition, LR, demographic factors, mechanism</td></tr>
+      <tr><td><code>render_evidence(recommendation)</code></td><td>Returns GRADE rating, key sources, composite evidence weight</td></tr>
+      <tr><td><code>render_safety(recommendation)</code></td><td>Interaction warnings, UL %, monitoring schedule</td></tr>
+      <tr><td><code>llm_polish(template_output)</code></td><td>Phase 2: Claude API rewrite with validation that no clinical claim is altered</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ APIS -->
+<div class="section" id="apis">
+  <div class="section-tag">Section 08</div>
+  <h2>API Contracts</h2>
+  <p>Full shipped contract with auth, payloads, and side effects: see <a href="#ref-api">Engine Reference — API Contract</a>. Below: request/response shapes and endpoint summary.</p>
+
+  <h3>POST /v1/recommendations</h3>
+  <p style="font-size:13px;color:var(--ink3);margin-bottom:10px"><strong>Production (shipped):</strong> pass <code>patient_id</code> only; engine loads <code>PatientProfile</code> from Postgres via <code>PatientRepository.get_for_scoring()</code>. <strong>Dev/demo:</strong> inline patient object when <code>ALLOW_INLINE_PATIENT=1</code>.</p>
+  <div class="code-block"><code><span class="comment"># Production request (Phase 2 target)</span>
+{
+  <span class="string">"patient_id"</span>: <span class="string">"aa10ca6d-25bd-4fa7-9fe8-22908f10bd8e"</span>,
+  <span class="string">"options"</span>: { <span class="string">"max_recommendations"</span>: <span class="number">6</span> }
+}
+
+<span class="comment"># Dev/demo request (Phase 1 shipped — examples/patient_t2dm_riyadh.json)</span>
+{
+  <span class="string">"patient"</span>: {
+    <span class="string">"demographics"</span>: { <span class="string">"age"</span>: <span class="number">52</span>, <span class="string">"sex"</span>: <span class="string">"F"</span>, <span class="string">"region_code"</span>: <span class="string">"SA-01"</span>, <span class="string">"bmi"</span>: <span class="number">31.0</span>, <span class="string">"pregnancy_status"</span>: <span class="keyword">false</span> },
+    <span class="string">"conditions"</span>: [{ <span class="string">"code"</span>: <span class="string">"E11.9"</span>, <span class="string">"system"</span>: <span class="string">"ICD-10"</span> }],
+    <span class="string">"medications"</span>: [{ <span class="string">"rxnorm"</span>: <span class="string">"6809"</span>, <span class="string">"name"</span>: <span class="string">"Metformin"</span>, <span class="string">"months_on"</span>: <span class="number">18</span> }],
+    <span class="string">"labs"</span>: [{ <span class="string">"loinc"</span>: <span class="string">"1989-3"</span>, <span class="string">"value"</span>: <span class="number">18</span>, <span class="string">"unit"</span>: <span class="string">"ng/mL"</span> }]
+  },
+  <span class="string">"options"</span>: { <span class="string">"max_recommendations"</span>: <span class="number">6</span> }
+}
+
+<span class="comment"># Response (200) — Phase 1 shipped shape</span>
+{
+  <span class="string">"session_id"</span>: <span class="string">"aa10ca6d-..."</span>,
+  <span class="string">"model_version"</span>: <span class="string">"rec-engine-1.0.0"</span>,
+  <span class="string">"evidence_snapshot_id"</span>: <span class="string">"kg-1.1.0-aa10ca6d"</span>,
+  <span class="string">"requires_clinician"</span>: <span class="keyword">true</span>,
+  <span class="string">"recommendations"</span>: [{ <span class="string">"rank"</span>: <span class="number">1</span>, <span class="string">"supplement"</span>: { <span class="string">"nutrient_id"</span>: <span class="string">"vitamin_d3"</span> }, <span class="string">"dose"</span>: { <span class="string">"amount"</span>: <span class="number">1800</span>, <span class="string">"unit"</span>: <span class="string">"IU"</span> }, <span class="string">"confidence_score"</span>: <span class="number">0.59</span> }],
+  <span class="string">"suppressed"</span>: [],
+  <span class="string">"disclaimer"</span>: <span class="string">"Wellness guidance only. Not a substitute for medical care."</span>
+}</code></div>
+
+  <h3 style="margin-top:20px">Shipped endpoints</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/recommendations</td><td>Score + persist session (<code>patient_id</code> prod; inline dev)</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/patients/{id}/labs</td><td>Append lab results (delta ingest)</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/patients/{id}/medications/sync</td><td>Merge medication list</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/patients/{id}/conditions/sync</td><td>Merge condition list</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/sessions/{session_id}</td><td>Retrieve served session + recommendations</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/patients/{patient_id}/history</td><td>Last N recommendation sessions for patient</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/feedback</td><td>Clinician override / adverse event (202 async)</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/audit/{session_id}</td><td>Audit record with SHA-256 input_hash</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/evidence/{snapshot_id}</td><td>KG evidence snapshot captured at serve time</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/safety/check</td><td>Standalone drug-nutrient interaction check</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/nutrients/{nutrient_id}</td><td>Nutrient metadata from KG</td></tr>
+    <tr><td><span class="chip gray">GET</span></td><td>/health</td><td>Connectivity: neo4j + postgres</td></tr>
+    <tr><td><span class="chip gray">GET</span></td><td>/health/live</td><td>K8s liveness probe</td></tr>
+    <tr><td><span class="chip gray">GET</span></td><td>/health/ready</td><td>Readiness: DBs + migrations</td></tr>
+  </table>
+
+  <h3 style="margin-top:20px">Planned endpoints</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Phase</th><th>Description</th></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/patients</td><td>2c M4</td><td>Register patient + hashed_mrn identity</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/labs/parse</td><td>2c M4</td><td>Parse-only: HL7/FHIR → LabResult[]</td></tr>
+    <tr><td><span class="chip navy">POST</span></td><td>/v1/rules/create</td><td>3+</td><td>JSON → rule_version_id via RuleMetadataEngine</td></tr>
+    <tr><td><span class="chip teal">GET</span></td><td>/v1/fhir/launch</td><td>3</td><td>SMART-on-FHIR EHR authorization redirect</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════ UML -->
+<div class="section" id="uml">
+  <div class="section-tag">Section 09</div>
+  <h2>UML Class Diagrams</h2>
+
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+classDiagram
+  class RecommendationPipeline {
+    +patient_repo: PatientRepository
+    +drs: DeficiencyRiskScorer
+    +candidate_gen: CandidateGenerator
+    +safety: SafetyEngine
+    +explain: ExplainService
+    +run(profile: PatientProfile) RecommendationSession
+  }
+
+  class IntakeNormalizer {
+    +normalize(raw, source_system) PatientProfile
+    +resolve_identity(source_system, key) UUID
+  }
+
+  class PatientRepository {
+    +get(patient_id) PatientProfile
+    +merge_from_source(profile, source) UUID
+  }
+
+  class DeficiencyRiskScorer {
+    -rule_engine: OptimizedRuleEngine
+    -graph_client: GraphClient
+    +score(patient, nutrient_id) DRS
+    +score_all(patient) Dict
+    -_apply_lab_override(logit_p, lab) float
+    -_apply_condition_modifiers(conditions) float
+    -_apply_drug_modifiers(medications) float
+  }
+
+  class OptimizedRuleEngine {
+    -engine: DBEngine
+    -use_parallel: bool
+    -max_workers: int
+    +evaluate(input_df, rule_logic, context_rules) DataFrame
+    -_efficient_join(left, right, key) DataFrame
+  }
+
+  class SafetyEngine {
+    -kg: GraphClient
+    +enforce_ul(recommendation) Recommendation
+    +check_drug_interactions(candidates, meds) FilterResult
+    +check_contraindications(candidates, conditions) FilterResult
+    +should_escalate(session) bool
+  }
+
+  class PersonalizationEngine {
+    +apply_longitudinal_blend(drs, history) DRS
+    +bayesian_update(prior, lab, variance) float
+  }
+
+  class KafkaEventProducer {
+    +send_patient_event(type, patient_id)
+    +send_recommendation_served(session)
+  }
+
+  class EvidenceService {
+    -graph_client: GraphClient
+    +compute_confidence(candidate) float
+    +snapshot_evidence(session_id) str
+    +resolve_conflict(edges) Evidence
+    +get_claim_citations(claim_id) CitationGraph
+  }
+
+  class GraphClient {
+    -driver: Neo4jDriver
+    +get_baseline(nutrient, demo_bucket) float
+    +edge(rel_type, src, tgt) Edge
+    +guideline_match(nutrient, patient) Guideline
+    +contraindication(nutrient, condition) Contraindication
+  }
+
+  RecommendationPipeline --> DeficiencyRiskScorer
+  RecommendationPipeline --> SafetyEngine
+  RecommendationPipeline --> ExplainService
+  RecommendationPipeline --> PersonalizationEngine
+  RecommendationPipeline --> KafkaEventProducer
+  IntakeNormalizer --> PatientRepository
+  RecommendationPipeline --> PatientRepository
+  DeficiencyRiskScorer --> GraphClient
+  SafetyEngine --> GraphClient
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ SEQUENCE -->
+<div class="section" id="sequence">
+  <div class="section-tag">Section 10</div>
+  <h2>Sequence Diagrams</h2>
+  <p>Canonical shipped paths are in <a href="#ref-sequence">Engine Reference — Sequence Diagrams</a>. Legacy design flows retained below.</p>
+
+  <h3>Production Path: Recommend by patient_id (shipped)</h3>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant Client
+  participant API as FastAPI
+  participant PG as Postgres Patient Realm
+  participant Pipe as RecommendationPipeline
+  participant KG as Neo4j KG
+  participant Redis as Redis
+  participant Audit as AuditRepository
+
+  Client->>API: POST /v1/recommendations {patient_id} + X-API-Key
+  API->>PG: PatientRepository.get_for_scoring(patient_id)
+  PG-->>API: PatientProfile
+  API->>Pipe: run(profile)
+  Pipe->>KG: baseline + LR edges + guidelines
+  Pipe->>Redis: cache reads
+  KG-->>Pipe: graph data
+  Pipe->>Pipe: SafetyEngine + PersonalizationEngine
+  Pipe-->>API: RecommendationSession
+  API->>PG: save session + recommendations + audit + snapshot
+  API-->>Client: ranked recommendations + clinician_flag
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">External Bulk Feeder (out of repo)</h3>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant WH as Source Warehouse
+  participant Feed as External Feeder
+  participant PG as Postgres Patient Realm
+  participant Eng as Supplement Engine
+
+  WH->>Feed: extract patients + clinical rows
+  Feed->>PG: UPSERT patients, conditions, meds, labs
+  Feed->>PG: ingest_batches audit row
+  Note over Eng,PG: Engine does not run bulk ETL
+  Eng->>PG: get_for_scoring on score request
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Dev Path: Inline patient JSON (Phase 1 shipped)</h3>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant Client
+  participant API as API Gateway
+  participant Intake as IntakeNormalizer
+  participant DRS as DeficiencyRiskScorer
+  participant RE as OptimizedRuleEngine
+  participant KG as Neo4j KG
+  participant Safety as SafetyEngine
+  participant Dose as DoseOptimizer
+  participant Conf as ConfidenceCompositor
+  participant Explain as ExplainService
+  participant Audit as AuditLogger
+
+  Client->>API: POST /v1/recommendations
+  API->>Intake: validate + normalize (RxNorm, ICD-10)
+  Intake-->>API: PatientProfile normalized
+  API->>DRS: score_all(patient)
+  DRS->>KG: get_baseline(nutrient, demo_bucket)
+  KG-->>DRS: baseline_prevalence[]
+  DRS->>RE: evaluate(patient_df, rule_logic_df, context_rules_df)
+  RE-->>DRS: matched_rows (condition_set scores)
+  DRS->>KG: edge(DEPLETES, rxnorm, nutrient) per medication
+  KG-->>DRS: LR + onset_months
+  DRS-->>API: DRS{p_deficient, contributors_trace}[]
+  API->>Safety: check_drug_interactions + check_contraindications
+  Safety->>KG: INTERACTS_WITH edges
+  KG-->>Safety: severity + action[]
+  Safety-->>API: FilterResult (blocked[], warned[])
+  API->>Dose: optimize_dose(candidates, patient)
+  Dose->>KG: rda + ul + bioavailability_factor
+  Dose-->>API: Dose{amount, unit, schedule}[]
+  API->>Conf: compute_confidence(candidates)
+  Conf-->>API: float[] (C scores)
+  API->>Explain: render(recommendations, drs_trace)
+  Explain-->>API: why + evidence + safety_notes
+  API->>Audit: log(session, evidence_snapshot)
+  Audit-->>API: audit_id
+  API-->>Client: RecommendationSession (ranked, warnings, clinician_flag)
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Rule Creation Flow (your existing pipeline)</h3>
+  <div class="mermaid-wrap">
+    <div class="mermaid">
+sequenceDiagram
+  participant CLI
+  participant RAF as RuleMetadataEngine
+  participant DB as PostgreSQL
+  participant RE as OptimizedRuleEngine
+  participant KG as Neo4j
+
+  CLI->>RAF: create_full_rule(json_input)
+  RAF->>DB: get_or_create_category
+  RAF->>DB: get_or_create_domain
+  RAF->>DB: insert rule + rule_version → rule_version_id
+  RAF->>DB: insert rule_attributes (condition_sets)
+  RAF->>DB: insert context_rules
+  RAF-->>CLI: {rule_version_id, attribute_mappings}
+  CLI->>RE: evaluate(patient_df, rule_logic, context_rules)
+  RE->>DB: load_attribute_rules(rule_version_id)
+  RE->>DB: load_context_rules(rule_version_id)
+  RE->>RE: _parallel_evaluate_condition_sets
+  RE->>DB: append_results(result_df)
+  RE-->>CLI: matched patient rows
+  CLI->>KG: enrich with nutrient LR edges
+  KG-->>CLI: DRS scores per nutrient
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ FLOWS -->
+<div class="section" id="flows">
+  <div class="section-tag">Section 11</div>
+  <h2>Core Process Flows</h2>
+
+  <h3>DRS Algorithm Flow</h3>
+  <div class="pipeline">
+    <div class="p-step">
+      <div class="p-icon">📍</div>
+      <h4>Demographics</h4>
+      <p>baseline_prevalence × regional mods (KSA Vit D: ×2.2)</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">🏥</div>
+      <h4>Conditions</h4>
+      <p>INCREASES_DEMAND_FOR edges + LR per condition (E11.9 → Vit D LR 1.6)</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">💊</div>
+      <h4>Medications</h4>
+      <p>DEPLETES edges × duration_factor (months_on / onset_months)</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">🔬</div>
+      <h4>Lab Override</h4>
+      <p>If lab present: weight 0.8 on lab_LR, 0.2 on prior</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">📊</div>
+      <h4>Posterior</h4>
+      <p>sigmoid(logit_p) → P_deficient ∈ [0,1]</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:24px">Safety Gate Flow</h3>
+  <div class="pipeline">
+    <div class="p-step">
+      <div class="p-icon">💊</div>
+      <h4>Drug-Nutrient</h4>
+      <p>4-tier check: absolute → block; major → red banner; moderate → timing; minor → note</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">🏥</div>
+      <h4>Disease CI</h4>
+      <p>Hemochromatosis+Fe, CKD4+K, hepatic failure+niacin → absolute block</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">⚗️</div>
+      <h4>Nutrient-Nutrient</h4>
+      <p>Ca↔Fe, Zn↔Cu, Fe↔Zn → timing warnings added</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">📏</div>
+      <h4>UL Enforcement</h4>
+      <p>Dose capped at 0.7×UL; block if dose > UL at any point</p>
+    </div>
+    <div class="p-step">
+      <div class="p-icon">👨‍⚕️</div>
+      <h4>Escalation Check</h4>
+      <p>10 triggers → requires_clinician = true + structured handoff block</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ OLAP -->
+<div class="section" id="olap">
+  <div class="section-tag">Section 12</div>
+  <h2>OLAP &amp; Analytics Pipelines</h2>
+  <p>Beyond the real-time recommendation engine, batch pipelines feed the patient realm, knowledge graph, analytics mart, and model retraining. The engine reads pre-loaded data; ETL owns joins and preprocessing.</p>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-rt">ETL-00</span> Patient Bulk Sync (from existing source system)</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Nightly (or hourly) Airflow DAG extracts from your existing Postgres / SQL Server / Impala warehouse, stages raw rows, normalizes via shared IntakeNormalizer, and merges into the Postgres patient realm. Same tables as realtime API ingest.</p>
+    <div class="chips" style="margin-top:12px">
+      <span class="chip teal">Airflow: dag_patient_bulk_sync</span>
+      <span class="chip navy">staging.* schema</span>
+      <span class="chip gray">hashed_mrn identity</span>
+      <span class="chip purple">Kafka patient.events on batch complete</span>
+    </div>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-olap">OLAP-01</span> Deficiency Prevalence Mart</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Aggregate de-identified recommendation data into a population health cube. Think of it as the engine's public health exhaust — every recommendation is a data point about a community.</p>
+    <table style="margin:0">
+      <tr><th>Fact Table</th><th>Dimensions</th><th>Metrics</th></tr>
+      <tr><td>fact_recommendations</td><td>dim_condition (ICD-10), dim_nutrient, dim_region (SA-01..), dim_demographic_bucket, dim_date</td><td>recommendation_count, avg_confidence, deficiency_rate (p_deficient), suppression_rate</td></tr>
+    </table>
+    <div class="chips" style="margin-top:12px">
+      <span class="chip teal">Airflow DAG: nightly</span>
+      <span class="chip navy">dbt transform</span>
+      <span class="chip gray">No patient_id in mart</span>
+      <span class="chip purple">Output: BigQuery / Redshift</span>
+    </div>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-ml">ML-01</span> Outcome Feedback Loop</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Lab follow-ups + clinician feedback → labeled dataset → weekly retraining of Bayesian priors and dose-response model. Your existing <span class="tag-inline">PerformanceBenchmark</span> class benchmarks new model versions before promotion.</p>
+    <div class="pipeline" style="margin:12px 0">
+      <div class="p-step"><h4>recommendation.served</h4><p>Kafka event</p></div>
+      <div class="p-step"><h4>Feedback API</h4><p>accept / reject / AE / lab result</p></div>
+      <div class="p-step"><h4>Label Builder</h4><p>LOINC-matched lab outcomes</p></div>
+      <div class="p-step"><h4>Retrain</h4><p>PyMC Bayesian priors + LightGBM dose-response</p></div>
+      <div class="p-step"><h4>Shadow → A/B</h4><p>Benchmark vs current; promote</p></div>
+    </div>
+    <div class="callout warn"><p>ML dose suggestions constrained to ±30% of rules-engine recommendation. Never overrides hard contraindications or UL.</p></div>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-rt">RT-01</span> Real-Time Patient Event Stream</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Kafka topic <span class="tag-inline">patient.events</span> → feature builder → recommender → <span class="tag-inline">recommendation.served</span>. Enables incremental re-evaluation when a new lab or medication is added without re-running the full pipeline.</p>
+    <table style="margin:0">
+      <tr><th>Topic</th><th>Trigger</th><th>Action</th></tr>
+      <tr><td>patient.lab_added</td><td>New LOINC result ingested</td><td>Re-run DRS for affected nutrients; update recommendation if delta &gt; 0.1</td></tr>
+      <tr><td>patient.med_added</td><td>New RxNorm drug prescribed</td><td>Re-run drug-interaction filter; surface new warnings</td></tr>
+      <tr><td>patient.condition_added</td><td>New ICD-10 code</td><td>Re-run candidate generation; check new contraindications</td></tr>
+    </table>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-olap">OLAP-02</span> Evidence Ingestion Pipeline</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Weekly automated PubMed + Cochrane + guideline RSS ingestion → NLP extraction → curator queue → KG commit. New evidence automatically updates GRADE weights on existing recommendation edges.</p>
+    <div class="pipeline" style="margin:12px 0">
+      <div class="p-step"><h4>Sources</h4><p>PubMed, Cochrane, NICE, USPSTF, KDIGO RSS</p></div>
+      <div class="p-step"><h4>NLP Extract</h4><p>PICO + effect size extraction</p></div>
+      <div class="p-step"><h4>Curator Queue</h4><p>Human review for new edges</p></div>
+      <div class="p-step"><h4>KG Commit</h4><p>Versioned SHA; snapshot captured</p></div>
+      <div class="p-step"><h4>Drift Alert</h4><p>If GRADE weight shifts &gt; 0.2, alert + re-evaluate affected recs</p></div>
+    </div>
+  </div>
+
+  <div class="olap-card">
+    <h3><span class="badge badge-ml">ML-02</span> Population Drift Detection</h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:12px">Monitor input distribution (patient population shift) and output distribution (sudden change in recommendation frequency for a nutrient). Triggers curator alert and optional model re-evaluation.</p>
+    <table style="margin:0">
+      <tr><th>Monitor</th><th>Method</th><th>Alert Threshold</th></tr>
+      <tr><td>Input drift</td><td>PSI (Population Stability Index) on demographic features</td><td>PSI &gt; 0.2 → alert</td></tr>
+      <tr><td>Output drift</td><td>% change in recommendation rate per nutrient per week</td><td>&gt; 15% shift → alert</td></tr>
+      <tr><td>Confidence drift</td><td>Rolling average confidence score per nutrient</td><td>Drop &gt; 0.1 in 4 weeks → alert</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ ML PIPELINE -->
+<div class="section" id="ml-pipeline">
+  <div class="section-tag">Section 13</div>
+  <h2>ML Pipeline Architecture</h2>
+
+  <div class="card-grid cols2">
+    <div class="card accent-teal">
+      <h3>Phase 1: Rules-Only MVP (shipped)</h3>
+      <p>Bayesian DRS + SafetyEngine + template ExplainService. Static KG priors from neo4j_seed v1.1.0. Redis-cached GraphClient. Evidence snapshots persisted. Inline patient JSON or load-by-id.</p>
+      <div class="chips">
+        <span class="chip teal">DeficiencyRiskScorer</span>
+        <span class="chip teal">SafetyEngine (Python)</span>
+        <span class="chip gray">6 integration tests</span>
+        <span class="chip navy">model rec-engine-1.0.0</span>
+      </div>
+    </div>
+    <div class="card accent-purple">
+      <h3>Phase 2: Ingest + Personalization</h3>
+      <p>Patient bulk ETL + intake APIs. patient_id-only recommendations. Kafka events. FHIR lab parser. PersonalizationEngine. OLAP mart. PyMC priors retrain from feedback.</p>
+      <div class="chips">
+        <span class="chip purple">IntakeNormalizer</span>
+        <span class="chip navy">Airflow patient sync</span>
+        <span class="chip teal">FHIR ingest</span>
+        <span class="chip gray">fact_recommendations mart</span>
+      </div>
+    </div>
+    <div class="card accent-gold">
+      <h3>Phase 3: Dose-Response Model</h3>
+      <p>LightGBM trained on (demographics, conditions, medications, dose, duration) → post-treatment lab value. Constrained to ±30% of rules-engine dose.</p>
+      <div class="chips">
+        <span class="chip gold">LightGBM</span>
+        <span class="chip gold">Shadow A/B</span>
+        <span class="chip gray">±30% band constraint</span>
+      </div>
+    </div>
+    <div class="card accent-navy">
+      <h3>Phase 4: Genomics Integration</h3>
+      <p>MTHFR → L-methylfolate preference. HFE C282Y → iron block. VDR variants → Vit D dose adjustment. Genotype modifies form/dose, never overrides phenotype evidence.</p>
+      <div class="chips">
+        <span class="chip navy">PGx panel</span>
+        <span class="chip navy">Form selection</span>
+        <span class="chip gray">Never overrides labs</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ ROADMAP -->
+<div class="section" id="roadmap">
+  <div class="section-tag">Section 14</div>
+  <h2>Delivery Roadmap</h2>
+
+  <div class="timeline">
+    <div class="phase">
+      <div class="phase-time">Wk 1–6<br/>Phase 0</div>
+      <div class="phase-content">
+        <h3>Foundations <span class="chip teal" style="font-size:10px;margin-left:8px">Complete</span></h3>
+        <p>KG schema, Postgres patient schema, FastAPI skeleton, audit log, Docker stack, domain models as frozen dataclasses.</p>
+        <div class="chips">
+          <span class="chip navy">Neo4j schema</span>
+          <span class="chip teal">Postgres PHI</span>
+          <span class="chip gray">Alembic</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-time">Wk 7–14<br/>Phase 1</div>
+      <div class="phase-content">
+        <h3>MVP — Recommendation Engine <span class="chip teal" style="font-size:10px;margin-left:8px">Complete</span></h3>
+        <p>DRS + safety + explain + evidence snapshots. Neo4j seed v1.1.0 (16+ conditions). Redis cache. 6 integration tests. Inline patient JSON for dev/demo.</p>
+        <div class="chips">
+          <span class="chip teal">DeficiencyRiskScorer</span>
+          <span class="chip ruby">SafetyEngine</span>
+          <span class="chip gold">ExplainService</span>
+          <span class="chip gray">validate_phase1_gate.ps1</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-time">Mo 4–7<br/>Phase 2</div>
+      <div class="phase-content">
+        <h3>Patient Realm + Ingest + Personalization <span class="chip gold" style="font-size:10px;margin-left:8px">Next</span></h3>
+        <p>Bulk ETL from existing source system + dynamic intake APIs. patient_id-only recommendations. Kafka wired. FHIR lab parser. PersonalizationEngine. OLAP mart. Airflow evidence + patient DAGs.</p>
+        <div class="chips">
+          <span class="chip navy">dag_patient_bulk_sync</span>
+          <span class="chip purple">IntakeNormalizer</span>
+          <span class="chip teal">merge_from_source</span>
+          <span class="chip gray">patient.events Kafka</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-time">Mo 8–14<br/>Phase 3</div>
+      <div class="phase-content">
+        <h3>Clinical Integration</h3>
+        <p>SMART-on-FHIR EHR launch. Clinician workflow (order sets). LightGBM dose-response model. Multi-language (Arabic, EN, FR, ES).</p>
+        <div class="chips">
+          <span class="chip gold">SMART-on-FHIR</span>
+          <span class="chip gold">LightGBM</span>
+          <span class="chip purple">Arabic NLP</span>
+        </div>
+      </div>
+    </div>
+    <div class="phase">
+      <div class="phase-time">Mo 15–24<br/>Phase 4</div>
+      <div class="phase-content">
+        <h3>Regulated Scale</h3>
+        <p>SFDA SaMD / FDA SaMD Class I/II submission. Genomics PGx panel integration. Payer HEOR module. Population health dashboard for public health agencies.</p>
+        <div class="chips">
+          <span class="chip ruby">SFDA SaMD</span>
+          <span class="chip navy">Genomics PGx</span>
+          <span class="chip teal">HEOR module</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+  <div class="callout">
+    <p><strong>Architecture summary:</strong> Bulk ETL and realtime intake APIs both write the same Postgres patient realm. The recommendation engine reads normalized <span class="tag-inline">PatientProfile</span> objects and Neo4j clinical evidence — it never queries the upstream warehouse at request time. Your existing <span class="tag-inline">OptimizedRuleEngine</span> multi-DB adapter powers the bulk extract side; <span class="tag-inline">DeficiencyRiskScorer</span> + <span class="tag-inline">SafetyEngine</span> power online scoring. Phase 1 MVP is complete; Phase 2 implements the dual ingest paths and production <code>patient_id</code> API.</p>
+  </div>
+</div>
+
+</main>
+
+<script>
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'base',
+  fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+  fontSize: 13,
+  themeVariables: {
+    fontSize: '13px',
+    fontFamily: 'IBM Plex Sans, system-ui, sans-serif',
+    lineColor: '#9b9a96',
+    textColor: '#3a3a3a',
+    primaryColor: '#e6f1fb',
+    primaryTextColor: '#0c447c',
+    primaryBorderColor: '#185fa5',
+    edgeLabelBackground: '#fafaf8',
+    secondaryColor: '#e1f5ee',
+    tertiaryColor: '#eeedfe'
+  }
+});
+
+const navLinks = document.querySelectorAll('nav a');
+const sections = document.querySelectorAll('.section, .hero');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>

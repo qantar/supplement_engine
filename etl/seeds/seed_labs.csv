@@ -1,0 +1,2 @@
+patient_id,loinc,value_num,unit,reference_low,reference_high,collected_at,ingest_batch_id,source_system
+f47ac10b-58cc-4372-a567-0e02b2c3d479,1989-3,18,ng/mL,30,80,2026-01-15T08:00:00+00:00,dbt-seed-001,mock_warehouse
