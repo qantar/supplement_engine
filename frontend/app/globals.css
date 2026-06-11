@@ -673,7 +673,7 @@ body {
 }
 
 .ledger dt {
-  font: 600 10px/1 var(--font-mono), ui-monospace, monospace;
+  font: 500 10px/1 var(--font-mono), ui-monospace, monospace;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgb(var(--faint));
@@ -682,6 +682,7 @@ body {
 
 .ledger dd {
   font: 500 12.5px var(--font-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum" 1;
   color: rgb(var(--ink));
 }
 
@@ -870,35 +871,39 @@ body {
   align-items: center;
   gap: 6px;
   margin-top: 9px;
-  font: 600 10.5px var(--font-mono), ui-monospace, monospace;
+  font: 500 10px/1 var(--font-mono), ui-monospace, monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   padding: 4px 10px;
   border-radius: 99px;
-  border: 1px solid rgb(var(--line-strong));
-  color: rgb(var(--muted));
+  border: 1px solid currentColor;
+  opacity: 0.9;
 }
 
 .grade-badge i {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   font-style: normal;
   display: inline-block;
+  background: currentColor;
 }
 
-.grade-badge.A i {
-  background: rgb(var(--blue));
+.grade-badge.A {
+  color: rgb(var(--blue));
+  background: rgb(var(--blue-soft));
 }
-.grade-badge.B i {
-  background: rgb(var(--blue));
-  opacity: 0.6;
+.grade-badge.B {
+  color: rgb(61, 80, 104);
+  background: rgb(235, 241, 248);
 }
-.grade-badge.C i {
-  background: rgb(var(--amber));
+.grade-badge.C {
+  color: rgb(var(--amber));
+  background: rgb(var(--amber-soft));
 }
-.grade-badge.D i {
-  background: rgb(var(--red));
+.grade-badge.D {
+  color: rgb(var(--red));
+  background: rgb(var(--red-soft));
 }
 
 .rec-dose {
@@ -972,16 +977,15 @@ body {
 }
 
 .meter-track {
-  height: 6px;
+  height: 5px;
   border-radius: 99px;
   background: rgb(var(--surface-2));
-  border: 1px solid rgb(var(--line));
   position: relative;
   overflow: visible;
 }
 
 .meter-fill {
-  height: 100%;
+  height: 5px;
   border-radius: 99px;
   background: rgb(var(--blue));
   width: 0;
@@ -1052,7 +1056,7 @@ body {
 .rec-foot {
   border-top: 1px solid rgb(var(--line));
   background: rgb(var(--surface-2));
-  padding: 13px 22px;
+  padding: 12px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1160,7 +1164,7 @@ body {
 }
 
 .rationale-row dt {
-  font: 600 10px/1 var(--font-mono), ui-monospace, monospace;
+  font: 500 10px/1 var(--font-mono), ui-monospace, monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgb(var(--blue));

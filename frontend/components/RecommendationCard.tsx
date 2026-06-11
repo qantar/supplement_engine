@@ -117,7 +117,7 @@ export function RecommendationCard({
         </div>
         {dose.amount != null && (
           <div className="rec-dose">
-            <div className="num">
+            <div className="num mono-val">
               {dose.amount.toLocaleString()}
               <u>{dose.unit}</u>
             </div>
