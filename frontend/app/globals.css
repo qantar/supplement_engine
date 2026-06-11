@@ -98,10 +98,11 @@ body {
   background-image: linear-gradient(var(--grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid) 1px, transparent 1px);
   background-size: 64px 64px;
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color 0.25s, color 0.25s;
+  font-weight: 400;
 }
 
 *:focus-visible {
@@ -113,6 +114,14 @@ body {
 ::selection {
   background: rgb(var(--blue-soft));
   color: rgb(var(--ink));
+}
+
+/* Utility: all numeric readouts — doses, scores, IDs, latency */
+.mono-val {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-weight: 500;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
 }
 
 /* ============================ LAYOUT ============================ */
@@ -427,8 +436,8 @@ body {
 }
 
 .panel-label {
-  font: 600 10.5px/1 var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.22em;
+  font: 500 10px/1 var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgb(var(--faint));
   margin-bottom: 16px;
@@ -503,8 +512,8 @@ body {
 
 .field label {
   display: block;
-  font: 600 10.5px/1 var(--font-mono), ui-monospace, monospace;
-  letter-spacing: 0.18em;
+  font: 500 10px/1 var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgb(var(--faint));
   margin-bottom: 7px;
@@ -514,12 +523,13 @@ body {
 .field select,
 .field textarea {
   width: 100%;
-  padding: 11px 12px;
+  padding: 10px 12px;
   border: 1px solid rgb(var(--line));
   border-radius: 7px;
   background: rgb(var(--surface-2));
   color: rgb(var(--ink));
   font: 13px/1.5 var(--font-mono), ui-monospace, monospace;
+  font-feature-settings: "tnum" 1;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inconsolata, Karla, Newsreader } from "next/font/google";
+import { Inconsolata, Inter, Newsreader } from "next/font/google";
 import "./globals.css";
 
-const sans = Karla({
+const sans = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500"],
   variable: "--font-sans",
   display: "swap",
 });
