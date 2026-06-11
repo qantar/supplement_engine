@@ -9,54 +9,80 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --paper: 245 248 252;
+  /* Surface & background */
+  --paper: 245 247 250;
   --surface: 255 255 255;
-  --surface-2: 235 242 250;
-  --ink: 15 26 46;
-  --muted: 74 95 122;
-  --faint: 122 140 165;
-  --line: 212 222 236;
-  --line-strong: 184 200 220;
-  --blue: 30 77 140;
-  --blue-ink: 11 31 58;
-  --blue-soft: 227 237 250;
-  --blue-glow: rgba(30, 77, 140, 0.2);
-  --amber: 168 105 14;
-  --amber-soft: 251 241 223;
-  --red: 169 59 42;
-  --red-soft: 251 237 234;
-  --red-line: 232 198 191;
-  --pass: 30 77 140;
-  --grid: rgba(15, 26, 46, 0.022);
-  --shadow-panel: 0 1px 2px rgba(15, 26, 46, 0.06),
-    0 8px 28px -12px rgba(15, 26, 46, 0.14);
+  --surface-2: 240 244 249;
+
+  /* Ink scale */
+  --ink: 13 24 41;
+  --muted: 61 80 104;
+  --faint: 122 144 168;
+
+  /* Border scale */
+  --line: 226 232 240;
+  --line-strong: 200 213 230;
+
+  /* Teal — primary accent (replaces navy blue) */
+  --blue: 14 124 107;
+  --blue-ink: 6 84 72;
+  --blue-soft: 227 244 241;
+  --blue-glow: rgba(14, 124, 107, 0.14);
+
+  /* Amber — warning / flag */
+  --amber: 176 107 12;
+  --amber-soft: 253 243 227;
+
+  /* Rose — blocked / contraindicated (replaces red) */
+  --red: 184 56 90;
+  --red-soft: 252 238 242;
+  --red-line: 232 185 200;
+
+  /* Semantic aliases */
+  --pass: 14 124 107;
+  --grid: rgba(13, 24, 41, 0.018);
+  --shadow-panel: 0 1px 2px rgba(13, 24, 41, 0.05),
+    0 4px 12px rgba(13, 24, 41, 0.05);
   --on-blue: 255 255 255;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --paper: 8 12 22;
-  --surface: 14 22 38;
-  --surface-2: 11 18 32;
+  /* Surface & background */
+  --paper: 8 14 26;
+  --surface: 13 20 34;
+  --surface-2: 10 17 28;
+
+  /* Ink scale */
   --ink: 232 238 248;
-  --muted: 154 170 194;
-  --faint: 106 124 152;
-  --line: 32 48 72;
-  --line-strong: 48 68 98;
-  --blue: 74 140 220;
-  --blue-ink: 168 200 245;
-  --blue-soft: 22 38 64;
-  --blue-glow: rgba(74, 140, 220, 0.22);
-  --amber: 224 162 75;
-  --amber-soft: 44 34 18;
-  --red: 229 130 112;
-  --red-soft: 50 23 18;
-  --red-line: 82 39 31;
-  --pass: 74 140 220;
-  --grid: rgba(232, 238, 248, 0.035);
-  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.45),
-    0 10px 32px -12px rgba(0, 0, 0, 0.55);
+  --muted: 148 165 191;
+  --faint: 78 100 120;
+
+  /* Border scale */
+  --line: 28 44 68;
+  --line-strong: 42 62 92;
+
+  /* Teal — primary accent */
+  --blue: 43 191 166;
+  --blue-ink: 111 222 208;
+  --blue-soft: 13 41 34;
+  --blue-glow: rgba(43, 191, 166, 0.18);
+
+  /* Amber — warning / flag */
+  --amber: 212 144 14;
+  --amber-soft: 36 26 6;
+
+  /* Rose — blocked / contraindicated */
+  --red: 232 96 126;
+  --red-soft: 42 14 23;
+  --red-line: 88 36 50;
+
+  /* Semantic aliases */
+  --pass: 43 191 166;
+  --grid: rgba(232, 238, 248, 0.030);
+  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.35),
+    0 6px 20px rgba(0, 0, 0, 0.28);
   --on-blue: 8 14 26;
 }
 
