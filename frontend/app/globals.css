@@ -265,9 +265,9 @@ body {
 .panel {
   background: rgb(var(--surface));
   border: 1px solid rgb(var(--line));
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: var(--shadow-panel);
-  padding: 22px;
+  padding: 20px;
   transition: background-color 0.25s, border-color 0.25s;
 }
 
@@ -330,6 +330,7 @@ body {
   border-color: rgb(var(--blue));
   color: rgb(var(--blue-ink));
   background: rgb(var(--blue-soft));
+  font-weight: 500;
 }
 
 .hint {
@@ -390,7 +391,7 @@ body {
 }
 
 .cohort-meta b {
-  font-weight: 600;
+  font-weight: 500;
   color: rgb(var(--ink));
 }
 
@@ -401,20 +402,41 @@ body {
   margin-top: 2px;
 }
 
+/* Profile summary — teal-bordered card shown in stored-patient mode */
+.profile-summary {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgb(var(--blue-soft));
+  border-left: 2px solid rgb(var(--blue));
+  border-radius: 0 7px 7px 0;
+}
+
+.profile-summary-label {
+  font: 500 9.5px/1 var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--blue-ink));
+  margin-bottom: 5px;
+}
+
+.profile-summary-data {
+  font: 400 12px/1.55 var(--font-sans), system-ui, sans-serif;
+  color: rgb(var(--muted));
+}
+
 .run-btn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 15px;
-  border-radius: 10px;
+  padding: 13px 15px;
+  border-radius: 9px;
   background: rgb(var(--blue));
   color: rgb(var(--on-blue));
-  font-size: 15px;
-  font-weight: 600;
+  font: 500 14px/1 var(--font-sans), system-ui, sans-serif;
   letter-spacing: 0.01em;
-  box-shadow: var(--shadow-panel);
+  box-shadow: 0 1px 2px rgba(14, 124, 107, 0.25);
   border: 0;
   cursor: pointer;
   transition: transform 0.12s, filter 0.15s;
@@ -465,10 +487,10 @@ body {
 }
 
 .chip-btn {
-  padding: 7px 12px;
+  padding: 6px 11px;
   border: 1px solid rgb(var(--line));
-  border-radius: 7px;
-  font-size: 12.5px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   color: rgb(var(--muted));
   background: rgb(var(--surface));
@@ -479,6 +501,7 @@ body {
 .chip-btn:hover {
   border-color: rgb(var(--blue));
   color: rgb(var(--blue-ink));
+  background: rgb(var(--blue-soft));
 }
 
 /* ============================ EMPTY STATE ============================ */

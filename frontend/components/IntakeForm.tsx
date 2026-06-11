@@ -171,6 +171,18 @@ export function IntakeForm({ loading, onSubmit }: Props) {
               autoComplete="off"
             />
           </div>
+
+          {selectedPilot && (
+            <div className="profile-summary" aria-label="Selected patient summary">
+              <div className="profile-summary-label">Profile loaded</div>
+              <div className="profile-summary-data">
+                {selectedPilot.clinical_intent}<br />
+                <span style={{ color: "rgb(var(--faint))", fontSize: "11px" }}>
+                  {selectedPilot.test_focus}
+                </span>
+              </div>
+            </div>
+          )}
         </section>
       ) : (
         <>
