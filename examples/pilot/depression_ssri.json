@@ -1,0 +1,41 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 41,
+      "sex": "F",
+      "region_code": "SA-01",
+      "bmi": 26.0,
+      "indoor_occupation": true,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "F32.9", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "36437", "name": "Sertraline", "months_on": 12, "dose_mg": 100}
+    ],
+    "labs": [
+      {
+        "loinc": "2132-9",
+        "value": 350,
+        "unit": "pg/mL",
+        "reference_low": 200,
+        "reference_high": 900
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 4.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "moderate"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

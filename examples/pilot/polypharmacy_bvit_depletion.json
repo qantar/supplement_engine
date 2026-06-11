@@ -1,0 +1,49 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 55,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 27.0,
+      "indoor_occupation": true,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "K21.0", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "6809", "name": "Metformin", "months_on": 48, "dose_mg": 1000},
+      {"rxnorm": "41493", "name": "Omeprazole", "months_on": 36, "dose_mg": 20}
+    ],
+    "labs": [
+      {
+        "loinc": "2132-9",
+        "value": 240,
+        "unit": "pg/mL",
+        "reference_low": 200,
+        "reference_high": 900
+      },
+      {
+        "loinc": "2284-8",
+        "value": 9.0,
+        "unit": "ng/mL",
+        "reference_low": 3.0,
+        "reference_high": 17.0
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 2.0,
+      "alcohol_units_wk": 14,
+      "smoking": true,
+      "activity_level": "low"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

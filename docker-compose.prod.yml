@@ -3,6 +3,7 @@
 
 services:
   api:
+    ports: []  # API reachable only via nginx on the internal network
     environment:
       ENVIRONMENT: production
       ALLOW_INLINE_PATIENT: "0"
@@ -10,3 +11,9 @@ services:
       API_KEYS: ${API_KEYS:-pilot-dev-key-change-me}
       KAFKA_ENABLED: ${KAFKA_ENABLED:-1}
       PERSONALIZATION_ENABLED: ${PERSONALIZATION_ENABLED:-0}
+
+  frontend:
+    environment:
+      ENGINE_API_KEY: ${API_KEYS:-pilot-dev-key-change-me}
+      CONSOLE_AUTH_USER: ${CONSOLE_AUTH_USER:-}
+      CONSOLE_AUTH_PASSWORD: ${CONSOLE_AUTH_PASSWORD:-}

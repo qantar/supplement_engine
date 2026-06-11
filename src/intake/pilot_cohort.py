@@ -68,9 +68,70 @@ PILOT_COHORT: tuple[PilotPatientMeta, ...] = (
         "elderly_ppi.json",
         "Elderly + long-term PPI depletion",
     ),
+    PilotPatientMeta(
+        uuid.UUID("a70bc10b-58cc-4372-a567-0e02b2c3d486"),
+        "MRN-BASE-008",
+        "healthy_baseline.json",
+        "Low-risk baseline — replete labs, high sun (threshold test)",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("a80bc10b-58cc-4372-a567-0e02b2c3d487"),
+        "MRN-CKD4-009",
+        "ckd_stage4_warfarin.json",
+        "CKD stage 4 + AF + warfarin — K/Mg blocks, escalation",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("a90bc10b-58cc-4372-a567-0e02b2c3d488"),
+        "MRN-OBE-010",
+        "obesity_t2dm_statin.json",
+        "Morbid obesity + T2DM + statin — fat-soluble/BMI adj",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("aa0bc10b-58cc-4372-a567-0e02b2c3d489"),
+        "MRN-DEP-011",
+        "depression_ssri.json",
+        "Major depression on SSRI — omega-3 demand path",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("ab0bc10b-58cc-4372-a567-0e02b2c3d48a"),
+        "MRN-IBD-012",
+        "ibd_crohn.json",
+        "Crohn's + methotrexate — iron/D/B12 multi-depletion",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("ac0bc10b-58cc-4372-a567-0e02b2c3d48b"),
+        "MRN-BAR-013",
+        "post_bariatric.json",
+        "Post-bariatric (Z98.84) — ADEK/B12/thiamine malabsorption",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("ad0bc10b-58cc-4372-a567-0e02b2c3d48c"),
+        "MRN-OST-014",
+        "osteoporosis_postmenopausal.json",
+        "Postmenopausal osteoporosis + alendronate — Ca/D guideline",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("ae0bc10b-58cc-4372-a567-0e02b2c3d48d"),
+        "MRN-LAC-015",
+        "hypothyroid_lactating.json",
+        "Hypothyroid + lactating — selenium/iodine sensitivity",
+    ),
+    PilotPatientMeta(
+        uuid.UUID("af0bc10b-58cc-4372-a567-0e02b2c3d48e"),
+        "MRN-POLY-016",
+        "polypharmacy_bvit_depletion.json",
+        "Metformin + PPI + smoking/alcohol — B-vitamin stack",
+    ),
 )
 
 PILOT_PATIENT_IDS: tuple[str, ...] = tuple(str(m.patient_id) for m in PILOT_COHORT)
+
+
+def cohort_by_source_key(source_key: str) -> PilotPatientMeta | None:
+    for meta in PILOT_COHORT:
+        if meta.source_key == source_key:
+            return meta
+    return None
 
 
 def fixture_path(meta: PilotPatientMeta) -> Path:

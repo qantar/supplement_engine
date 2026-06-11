@@ -92,4 +92,4 @@ Invoke-DockerCompose -ComposeFiles @("docker-compose.yml") -ComposeArgs @("up", 
 Start-Sleep -Seconds 15
 
 Write-Host "`n=== Phase 2b Pilot Gate PASSED ===" -ForegroundColor Green
-Write-Host "Complete clinical review checklist in SETUP_ENVIRONMENT.md (Pilot section)."
+Write-Host "Complete clinical review checklist in examples/pilot/README.md."

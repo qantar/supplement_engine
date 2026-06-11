@@ -1,0 +1,52 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 71,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 29.0,
+      "indoor_occupation": false,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "N18.4", "system": "ICD-10", "source": "ehr"},
+      {"code": "I48.91", "system": "ICD-10", "source": "ehr"},
+      {"code": "E11.9", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "1091643", "name": "Warfarin", "months_on": 60, "dose_mg": 5},
+      {"rxnorm": "6809", "name": "Metformin", "months_on": 36, "dose_mg": 500},
+      {"rxnorm": "30131", "name": "Lisinopril", "months_on": 48, "dose_mg": 10}
+    ],
+    "labs": [
+      {
+        "loinc": "2823-3",
+        "value": 5.8,
+        "unit": "mEq/L",
+        "reference_low": 3.5,
+        "reference_high": 5.0
+      },
+      {
+        "loinc": "19123-9",
+        "value": 2.4,
+        "unit": "mg/dL",
+        "reference_low": 1.7,
+        "reference_high": 2.2
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 2.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "low"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

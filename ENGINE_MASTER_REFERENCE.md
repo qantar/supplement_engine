@@ -133,10 +133,9 @@ Each component below is a Docker service or runtime dependency. This section exp
 | **Redis** | `supplement_redis` :6379 | **Cache layer for Neo4j reads** inside `GraphClient`. Speeds up near-static KG lookups. Graceful fallback to Neo4j if Redis is down. | **On cacheable GraphClient calls** during scoring: `get_nutrient_meta`, `get_baseline_prevalence`, `get_guideline`. **Not** used for interaction/safety edges or patient data. TTL: 1h (nutrient), 24h (baseline/guideline). |
 | **Kafka** | `supplement_kafka` :9092 | **Async event bus** (producers only in this repo). Decouples downstream analytics/consumers from the sync API path. | **Only when `KAFKA_ENABLED=1`:** after delta ingest (`patient.events`) and after score persist (`recommendation.served`). No-op if disabled or broker unreachable. |
 | **Zookeeper** | `supplement_zookeeper` | Kafka cluster coordination (broker metadata). | Runs whenever Kafka container runs. Not called directly by application code. |
-| **Airflow** | `supplement_airflow` :8080 | **Placeholder orchestration** — DAG stub for dbt bulk sync (`dag_patient_bulk_sync.py`). Not on the production score path. | Manual/scheduled if you start the Airflow service. **Not required** for scoring or pilot gates. |
 | **Alembic** | Runs inside API container at boot | **Schema migrations** for Postgres (`alembic upgrade head` in `docker-entrypoint.sh`). | **Every API container start** — before Uvicorn workers bind. Ensures `drs_snapshot` and ingest columns exist. |
 | **External feeder** | Out of repo | Writes patient rows directly to Postgres tables. Engine treats rows as already present. | Whenever your other project runs bulk load. Engine **does not** observe or trigger the feeder. |
-| **Pilot seed script** | `scripts/seed_patient_realm.py` | Dev/pilot convenience — loads 7 fixtures into Postgres (same tables as feeder). | Manual: `docker compose exec api python scripts/seed_patient_realm.py`. Gate scripts call this before prod tests. |
+| **Pilot seed script** | `scripts/seed_patient_realm.py` | Dev/pilot convenience — loads 16 fixtures into Postgres (same tables as feeder). | Manual: `python scripts/run_app.py seed --all`. Gate scripts call this before prod tests. |
 
 ### Application-layer modules (not separate containers)
 
@@ -306,7 +305,6 @@ sequenceDiagram
 
 | Technology | Why it is not in every request |
 |------------|--------------------------------|
-| Airflow | Batch orchestration stub; bulk load is external |
 | Zookeeper | Infrastructure for Kafka only |
 | Alembic | Runs once at API container boot, not per request |
 | External feeder | Writes asynchronously; engine never calls it |
@@ -341,7 +339,7 @@ sequenceDiagram
 | `PatientRepository.get_for_scoring()` + read controls | `src/db/repositories.py` |
 | `ProfileValidator` (ICD-10, RxNorm, LOINC) | `src/intake/validator.py` |
 | Alembic 002 ingest columns | `alembic/versions/002_phase2_ingest.py` |
-| dbt mock project (dev reference only) | `etl/` |
+| Patient realm table contract | `etl/PATIENT_REALM_CONTRACT.md` |
 | Gate | `scripts/validate_phase2a_gate.ps1` |
 
 ### Phase 2b — Production hardening
@@ -351,7 +349,7 @@ sequenceDiagram
 | **M1** | Prod compose overlay, API key middleware | `docker-compose.prod.yml`, `src/api/middleware/api_key.py` |
 | **M2** | `/health/live`, `/health/ready`, evidence `content_hash` | `src/api/app.py`, `recommendation_pipeline.py` |
 | **M4** | Structured JSON request logs (`patient_id_hash`) | `src/api/app.py` middleware |
-| **Pilot** | 7 clinical personas + multi-patient gate | `examples/pilot/`, `scripts/validate_phase2b_pilot_gate.ps1` |
+| **Pilot** | 16 clinical personas + multi-patient gate | `examples/pilot/`, `scripts/validate_phase2b_pilot_gate.ps1` |
 | | Prod gate (M1+M2) | `scripts/validate_phase2b_prod_gate.ps1` |
 
 ### Phase 2c — Events + personalization
@@ -446,7 +444,7 @@ docker compose up -d --force-recreate api
 | `DRS_THRESHOLD` | `0.35` | `0.35` | Candidate cutoff |
 | `MIN_CONFIDENCE` | `0.40` | `0.40` | Output filter |
 
-Full list: `.env.example`, `SETUP_ENVIRONMENT.md`.
+Full list: `.env.example`, `python scripts/run_app.py --help`.
 
 ---
 
@@ -463,7 +461,6 @@ Full list: `.env.example`, `SETUP_ENVIRONMENT.md`.
 | `supplement_redis` | localhost:6379 | KG query cache |
 | `supplement_kafka` | localhost:9092 | Event streaming (optional) |
 | `supplement_zookeeper` | internal | Kafka dependency |
-| `supplement_airflow` | http://localhost:8080 | Orchestration (placeholder DAGs) |
 
 ### Everyday commands
 
@@ -804,7 +801,7 @@ Run from project root in PowerShell. Order matters for first full sign-off.
 | 1 | `.\scripts\validate_phase1_gate.ps1` | Phase 1 MVP + Neo4j seed + integration smoke |
 | 2 | `.\scripts\validate_phase2a_gate.ps1` | patient_id scoring + delta ingest |
 | 3 | `.\scripts\validate_phase2b_prod_gate.ps1` | M1 auth + M2 readiness/evidence; restores dev profile |
-| 4 | `.\scripts\validate_phase2b_pilot_gate.ps1` | All 7 pilot patients + hemochromatosis iron block |
+| 4 | `.\scripts\validate_phase2b_pilot_gate.ps1` | All 16 pilot patients + hemochromatosis iron block |
 | 5 | `.\scripts\validate_phase2c_m1_gate.ps1` | Kafka unit tests + prod score + topic smoke |
 | 6 | `.\scripts\validate_phase2c_m2_gate.ps1` | Personalization unit + two-session integration |
 
@@ -880,7 +877,7 @@ POST /v1/recommendations
 
 Full schema, read rules, and column notes: **`etl/PATIENT_REALM_CONTRACT.md`**
 
-The `etl/` dbt folder is a **mock/dev reference only**.
+Bulk ETL from your warehouse runs in an external feeder project — not in this repo.
 
 ---
 
@@ -961,10 +958,9 @@ Invoke-RestMethod -Uri http://localhost/v1/recommendations -Method Post -Headers
 |-------|------|
 | Master reference (this doc) | `ENGINE_MASTER_REFERENCE.md` |
 | **Architecture diagrams (browser)** | **`ENGINE_DIAGRAMS.html`** |
-| Windows setup walkthrough | `SETUP_ENVIRONMENT.md` |
-| AI assistant context | `AI_CONTEXT.md` |
-| Business requirements | `supplement_engine_brd.html` |
+| Windows / local setup | `python scripts/run_app.py up --open` |
 | Patient table contract | `etl/PATIENT_REALM_CONTRACT.md` |
+| Business requirements | `supplement_engine_brd.html` |
 | API application | `src/api/app.py` |
 | Pipeline | `src/pipelines/recommendation_pipeline.py` |
 | Repositories | `src/db/repositories.py` |

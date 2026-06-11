@@ -1,0 +1,3 @@
+Drop Inter and IBM Plex Mono .woff2 files here to self-host the webfonts.
+The @font-face rules in app/globals.css already reference local() names;
+add url() entries pointing at these files to activate them.

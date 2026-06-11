@@ -1,3 +1,0 @@
-patient_id,rxnorm_cui,name,months_on,dose_mg,ingest_batch_id,source_system
-f47ac10b-58cc-4372-a567-0e02b2c3d479,6809,Metformin,18,1000,dbt-seed-001,mock_warehouse
-f47ac10b-58cc-4372-a567-0e02b2c3d479,41493,Omeprazole,24,,dbt-seed-001,mock_warehouse

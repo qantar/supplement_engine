@@ -82,7 +82,7 @@ async def main() -> None:
 
     print(f"Seeded {len(PILOT_COHORT)} pilot patients:")
     for meta in PILOT_COHORT:
-        print(f"  {meta.patient_id}  {meta.clinical_intent}")
+        print(f"  {meta.source_key:14}  {meta.patient_id}  {meta.clinical_intent}")
 
 
 if __name__ == "__main__":

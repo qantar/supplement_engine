@@ -86,10 +86,6 @@ Fixtures: `examples/pilot/`, registry: `src/intake/pilot_cohort.py`.
 | `c30bc10b-58cc-4372-a567-0e02b2c3d482` | `pregnancy.json` | Pregnancy — folate/iron guideline doses |
 | `d40bc10b-58cc-4372-a567-0e02b2c3d483` | `celiac.json` | Celiac — malabsorption risk nutrients |
 | `e50bc10b-58cc-4372-a567-0e02b2c3d484` | `vegan_b12.json` | Vegan + low B12 lab |
-| `f60bc10b-58cc-4372-a567-0e02b2c3d485` | `elderly_ppi.json` | Elderly + long-term PPI depletion |
-
 Gate: `.\scripts\validate_phase2b_pilot_gate.ps1`
 
-## `etl/` folder (reference only)
-
-The `etl/` dbt project is a **mock/dev pattern** for loading the same tables from CSV. It is **not** part of the production runtime and **not** required when your external project feeds Postgres directly.
+Full pilot matrix (16 patients): `examples/pilot/README.md`.

@@ -1,0 +1,55 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 36,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 22.5,
+      "indoor_occupation": false,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "K50.90", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "72625", "name": "Methotrexate", "months_on": 8, "dose_mg": 15}
+    ],
+    "labs": [
+      {
+        "loinc": "2498-4",
+        "value": 38,
+        "unit": "ug/dL",
+        "reference_low": 60,
+        "reference_high": 170
+      },
+      {
+        "loinc": "1989-3",
+        "value": 16,
+        "unit": "ng/mL",
+        "reference_low": 30,
+        "reference_high": 80
+      },
+      {
+        "loinc": "2132-9",
+        "value": 280,
+        "unit": "pg/mL",
+        "reference_low": 200,
+        "reference_high": 900
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 3.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "moderate"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

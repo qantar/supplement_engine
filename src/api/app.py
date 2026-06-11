@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.middleware.api_key import ApiKeyMiddleware
+from src.api.middleware.api_key import ApiKeyMiddleware, is_api_key_required, load_api_keys
 from src.db.engine import (
     check_postgres_health, close_db, get_session as get_db_session,
     get_session_dep, init_db,
@@ -86,6 +86,11 @@ async def lifespan(app: FastAPI):
     # Postgres — single shared pool
     init_db(dsn=os.getenv("POSTGRES_DSN"))
     logger.info("Postgres connection pool initialised")
+
+    if is_api_key_required() and not load_api_keys():
+        raise RuntimeError(
+            "REQUIRE_API_KEY=1 but API_KEYS is empty. Set API_KEYS before starting."
+        )
 
     app_state.model_version = await _load_active_model_version()
     personalization_enabled = os.getenv(
@@ -400,7 +405,9 @@ async def create_recommendations(
         raise
     except Exception as e:
         logger.exception("Pipeline failed for request %s", request)
-        raise HTTPException(status_code=500, detail=str(e))
+        env = os.getenv("ENVIRONMENT", "development").lower()
+        detail = str(e) if env == "development" else "Internal server error"
+        raise HTTPException(status_code=500, detail=detail)
 
 
 @app.post("/v1/patients/{patient_id}/labs", status_code=201, tags=["patients"])

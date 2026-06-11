@@ -1,0 +1,50 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 48,
+      "sex": "F",
+      "region_code": "SA-01",
+      "bmi": 38.5,
+      "indoor_occupation": true,
+      "veiled_dress": true,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [
+      {"code": "E11.9", "system": "ICD-10", "source": "ehr"},
+      {"code": "E66.01", "system": "ICD-10", "source": "ehr"}
+    ],
+    "medications": [
+      {"rxnorm": "6809", "name": "Metformin", "months_on": 24, "dose_mg": 1000},
+      {"rxnorm": "36567", "name": "Atorvastatin", "months_on": 18, "dose_mg": 40}
+    ],
+    "labs": [
+      {
+        "loinc": "1989-3",
+        "value": 22,
+        "unit": "ng/mL",
+        "reference_low": 30,
+        "reference_high": 80
+      },
+      {
+        "loinc": "19123-9",
+        "value": 1.5,
+        "unit": "mg/dL",
+        "reference_low": 1.7,
+        "reference_high": 2.2
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 1.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "low"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

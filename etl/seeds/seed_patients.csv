@@ -1,2 +1,0 @@
-source_system,source_patient_key,patient_id,hashed_mrn,sex,region_code,dob_year,bmi,indoor_occupation,veiled_dress,pregnancy_status,lactation_status,ingest_batch_id
-mock_warehouse,MRN-T2DM-001,f47ac10b-58cc-4372-a567-0e02b2c3d479,366adf85f9216abad0f1a70a2ac065b0c061e9bcc76a1bec6d2e5b638d66977e,F,SA-01,1974,31.0,true,true,false,false,dbt-seed-001

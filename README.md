@@ -73,14 +73,21 @@ POST /v1/recommendations { patient_id }
 
 ## Quick Start
 
-> **First time setup?** See [SETUP_ENVIRONMENT.md](SETUP_ENVIRONMENT.md). With Docker Desktop running:
+> **First time setup?** With Docker Desktop installed, one command starts everything:
 
 ```powershell
 cd supplement_engine
-.\scripts\start_app.ps1
+python scripts/run_app.py up --open
+# or: .\scripts\start_app.ps1 -Open
 ```
 
 Or manually: `docker compose up -d --build api neo4j postgres redis nginx` then seed Neo4j (see setup doc).
+
+```powershell
+# Clinician console (with backend stack running)
+docker compose up --build frontend api neo4j postgres redis
+# console → http://localhost:3000
+```
 
 ```powershell
 # After stack is up — test a recommendation
@@ -160,12 +167,12 @@ supplement_engine/
 | Service   | Port | Purpose |
 |-----------|------|---------|
 | api       | 8000 | FastAPI — recommendation engine |
+| frontend  | 3000 | Next.js clinician console ([`frontend/`](frontend/README.md)) |
 | nginx     | 80   | Reverse proxy + rate limiting |
 | neo4j     | 7474/7687 | Knowledge graph |
 | postgres  | 5432 | Patient store + audit log |
 | redis     | 6379 | KG query cache |
 | kafka     | 9092 | Event streaming (patient.events → recommendation.served) |
-| airflow   | 8080 | Pipeline orchestration (evidence ingestion, retraining) |
 
 ---
 

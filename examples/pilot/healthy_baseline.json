@@ -1,0 +1,51 @@
+{
+  "patient": {
+    "demographics": {
+      "age": 28,
+      "sex": "M",
+      "region_code": "SA-01",
+      "bmi": 23.5,
+      "indoor_occupation": false,
+      "veiled_dress": false,
+      "pregnancy_status": false,
+      "lactation_status": false
+    },
+    "conditions": [],
+    "medications": [],
+    "labs": [
+      {
+        "loinc": "1989-3",
+        "value": 42,
+        "unit": "ng/mL",
+        "reference_low": 30,
+        "reference_high": 80
+      },
+      {
+        "loinc": "2132-9",
+        "value": 520,
+        "unit": "pg/mL",
+        "reference_low": 200,
+        "reference_high": 900
+      },
+      {
+        "loinc": "2498-4",
+        "value": 95,
+        "unit": "ug/dL",
+        "reference_low": 60,
+        "reference_high": 170
+      }
+    ],
+    "lifestyle": {
+      "diet_pattern": "omnivore",
+      "sun_exposure_hrs_wk": 12.0,
+      "alcohol_units_wk": 0,
+      "smoking": false,
+      "activity_level": "high"
+    },
+    "preferences": {
+      "halal": true,
+      "vegan": false,
+      "budget_tier": "standard"
+    }
+  }
+}

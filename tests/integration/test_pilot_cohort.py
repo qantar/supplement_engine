@@ -6,7 +6,7 @@ import os
 import httpx
 import pytest
 
-from src.intake.pilot_cohort import PILOT_COHORT, PILOT_PATIENT_IDS
+from src.intake.pilot_cohort import PILOT_COHORT, PILOT_PATIENT_IDS, cohort_by_source_key
 
 pytestmark = pytest.mark.integration
 
@@ -55,7 +55,9 @@ async def test_pilot_patient_scores(require_stack, api_base_url: str, patient_id
 async def test_hemochromatosis_iron_not_recommended(require_stack, api_base_url: str):
     """Hemochromatosis patient must not receive iron in recommendations."""
     _require_api_key_enabled(api_base_url)
-    hemo_id = str(PILOT_COHORT[2].patient_id)
+    hemo = cohort_by_source_key("MRN-HEMO-003")
+    assert hemo is not None
+    hemo_id = str(hemo.patient_id)
     async with httpx.AsyncClient(base_url=api_base_url, timeout=60.0) as client:
         resp = await client.post(
             "/v1/recommendations",
@@ -68,6 +70,55 @@ async def test_hemochromatosis_iron_not_recommended(require_stack, api_base_url:
         for r in resp.json().get("recommendations", [])
     ]
     assert "iron" not in nutrient_ids
+
+
+@pytest.mark.asyncio
+async def test_ckd_stage4_potassium_not_recommended(require_stack, api_base_url: str):
+    """CKD stage 4 patient must not receive potassium in recommendations."""
+    _require_api_key_enabled(api_base_url)
+    ckd4 = cohort_by_source_key("MRN-CKD4-009")
+    assert ckd4 is not None
+    async with httpx.AsyncClient(base_url=api_base_url, timeout=60.0) as client:
+        resp = await client.post(
+            "/v1/recommendations",
+            json={"patient_id": str(ckd4.patient_id), "options": {"max_recommendations": 8}},
+            headers=_api_key_headers(),
+        )
+    assert resp.status_code == 200, resp.text
+    data = resp.json()
+    nutrient_ids = [
+        r["supplement"]["nutrient_id"]
+        for r in data.get("recommendations", [])
+    ]
+    assert "potassium" not in nutrient_ids
+    assert data.get("requires_clinician") is True
+
+
+@pytest.mark.asyncio
+async def test_healthy_baseline_few_recommendations(require_stack, api_base_url: str):
+    """Replete baseline patient should yield fewer recommendations than high-risk cases."""
+    _require_api_key_enabled(api_base_url)
+    baseline = cohort_by_source_key("MRN-BASE-008")
+    t2dm = cohort_by_source_key("MRN-T2DM-001")
+    assert baseline is not None and t2dm is not None
+    headers = _api_key_headers()
+    body = {"options": {"max_recommendations": 8}}
+    async with httpx.AsyncClient(base_url=api_base_url, timeout=60.0) as client:
+        base_resp = await client.post(
+            "/v1/recommendations",
+            json={**body, "patient_id": str(baseline.patient_id)},
+            headers=headers,
+        )
+        t2dm_resp = await client.post(
+            "/v1/recommendations",
+            json={**body, "patient_id": str(t2dm.patient_id)},
+            headers=headers,
+        )
+    assert base_resp.status_code == 200, base_resp.text
+    assert t2dm_resp.status_code == 200, t2dm_resp.text
+    base_count = len(base_resp.json().get("recommendations", []))
+    t2dm_count = len(t2dm_resp.json().get("recommendations", []))
+    assert base_count <= t2dm_count
 
 
 @pytest.mark.asyncio
