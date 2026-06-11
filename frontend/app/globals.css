@@ -506,8 +506,8 @@ body {
 
 /* ============================ EMPTY STATE ============================ */
 .empty-state {
-  border: 1.5px dashed rgb(var(--line-strong));
-  border-radius: 14px;
+  border: 1px solid rgb(var(--line));
+  border-radius: 12px;
   min-height: 520px;
   display: flex;
   flex-direction: column;
@@ -525,7 +525,8 @@ body {
 
 .empty-state p {
   max-width: 40ch;
-  font-size: 14.5px;
+  font-size: 14px;
+  color: rgb(var(--faint));
 }
 
 .empty-state kbd {
@@ -558,20 +559,20 @@ body {
   left: 16.5px;
   top: -12px;
   height: 24px;
-  width: 1.5px;
+  width: 1px;
   background: rgb(var(--line));
 }
 
 .gate-node {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 1.5px solid rgb(var(--line-strong));
+  border: 1px solid rgb(var(--line-strong));
   background: rgb(var(--surface));
   display: flex;
   align-items: center;
   justify-content: center;
-  font: 600 11px var(--font-mono), ui-monospace, monospace;
+  font: 500 10px var(--font-mono), ui-monospace, monospace;
   color: rgb(var(--faint));
   transition: 0.25s;
   z-index: 1;
@@ -579,14 +580,14 @@ body {
 }
 
 .gate-name {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   color: rgb(var(--faint));
   transition: 0.25s;
 }
 
 .gate-stat {
-  font: 500 11.5px var(--font-mono), ui-monospace, monospace;
+  font: 500 11px var(--font-mono), ui-monospace, monospace;
   color: rgb(var(--faint));
   letter-spacing: 0.04em;
   text-align: right;
@@ -602,7 +603,7 @@ body {
   position: absolute;
   inset: -5px;
   border-radius: 50%;
-  border: 1.5px solid rgb(var(--blue));
+  border: 1px solid rgb(var(--blue));
   border-top-color: transparent;
   animation: spin 0.7s linear infinite;
 }
@@ -642,7 +643,7 @@ body {
   font: 12px/1.9 var(--font-mono), ui-monospace, monospace;
   background: rgb(var(--surface-2));
   border: 1px solid rgb(var(--line));
-  border-radius: 7px;
+  border-radius: 6px;
   padding: 12px 14px;
   color: rgb(var(--muted));
   max-height: 132px;
@@ -1253,14 +1254,15 @@ body {
 }
 
 .history-row:hover {
-  color: rgb(var(--blue-ink));
+  color: rgb(var(--blue));
 }
 
 .history-row.active {
   background: rgb(var(--blue-soft));
-  border-radius: 7px;
-  padding-left: 8px;
+  border-radius: 6px;
+  padding-left: 10px;
   padding-right: 8px;
+  border-left: 2px solid rgb(var(--blue));
 }
 
 /* ============================ TOAST ============================ */
