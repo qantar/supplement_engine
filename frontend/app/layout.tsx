@@ -1,16 +1,36 @@
 import type { Metadata } from "next";
+import { Inconsolata, Karla, Newsreader } from "next/font/google";
 import "./globals.css";
 
-// Fonts are wired via @font-face in globals.css with robust system fallbacks,
-// so the build never depends on a network fetch at compile time. To use the
-// Inter / IBM Plex Mono webfonts, drop the .woff2 files into /public/fonts
-// (the @font-face rules already point at them) or swap in next/font/google.
+const sans = Karla({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const serif = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
+
+const mono = Inconsolata({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Supplement Engine — Clinician Console",
+  title: "Supplement Engine — Evidence-ranked recommendations",
   description:
     "Evidence-ranked nutraceutical recommendations with a deterministic safety gate.",
 };
+
+const themeScript = `(function(){try{var t=localStorage.getItem('theme');var d=t||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=d;}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
 export default function RootLayout({
   children,
@@ -18,8 +38,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-ground bg-grid">{children}</body>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${sans.variable} ${serif.variable} ${mono.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

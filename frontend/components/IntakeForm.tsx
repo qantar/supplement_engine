@@ -109,39 +109,42 @@ export function IntakeForm({ loading, onSubmit }: Props) {
   const selectedPilot = PILOT_COHORT.find((p) => p.patient_id === patientId);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="rounded-panel border border-panelEdge bg-panel p-4">
-        <p className="mb-3 text-2xs uppercase tracking-wider text-inkMute">
-          Intake mode
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <ModeButton
-            active={mode === "stored"}
+    <form onSubmit={handleSubmit} className="console">
+      <section className="panel">
+        <div className="panel-label">Intake mode</div>
+        <div className="seg" role="group" aria-label="Intake mode">
+          <button
+            type="button"
+            aria-pressed={mode === "stored"}
             onClick={() => setMode("stored")}
           >
             Stored patient
-          </ModeButton>
-          <ModeButton
-            active={mode === "inline"}
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === "inline"}
             onClick={() => setMode("inline")}
           >
             Inline profile (dev)
-          </ModeButton>
+          </button>
         </div>
-        <p className="mt-2 text-xs text-inkFaint">
+        <p className="hint">
           {mode === "stored"
             ? "Loads profile from Postgres — use for clinical pilot."
             : "Sends full profile inline — dev/demo only when ALLOW_INLINE_PATIENT=1."}
         </p>
-      </div>
+      </section>
 
       {mode === "stored" ? (
-        <Section title="Patient lookup">
-          <Field label="Pilot cohort">
+        <section className="panel">
+          <div className="panel-label">Patient lookup</div>
+          <div className="field">
+            <label htmlFor="cohort">Pilot cohort</label>
             <select
+              id="cohort"
+              className="field-input"
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
-              className={inputCls}
             >
               {PILOT_COHORT.map((p) => (
                 <option key={p.patient_id} value={p.patient_id}>
@@ -149,41 +152,54 @@ export function IntakeForm({ loading, onSubmit }: Props) {
                 </option>
               ))}
             </select>
-          </Field>
-          {selectedPilot && (
-            <p className="mt-2 text-sm text-inkMute">
-              {selectedPilot.clinical_intent}
-            </p>
-          )}
-          {selectedPilot && (
-            <p className="mt-1 text-xs text-inkFaint">
-              Tests: {selectedPilot.test_focus}
-            </p>
-          )}
-          <Field label="Or paste patient UUID">
+            {selectedPilot && (
+              <div className="cohort-meta">
+                <b>{selectedPilot.clinical_intent}</b>
+                <small>Tests: {selectedPilot.test_focus}</small>
+              </div>
+            )}
+          </div>
+          <div className="field">
+            <label htmlFor="uuid">Or paste patient UUID</label>
             <input
+              type="text"
+              id="uuid"
+              className="field-input"
               value={patientId}
               onChange={(e) => setPatientId(e.target.value)}
-              className={`${inputCls} font-mono`}
-              placeholder="Patient UUID"
+              spellCheck={false}
+              autoComplete="off"
             />
-          </Field>
-        </Section>
+          </div>
+        </section>
       ) : (
         <>
-          <div className="flex flex-wrap gap-2">
-            <PresetButton onClick={() => loadPreset(APPENDIX_A)}>
-              Appendix A · 52F T2DM
-            </PresetButton>
-            <PresetButton onClick={() => loadPreset(EMPTY)}>Clear</PresetButton>
-          </div>
+          <section className="panel">
+            <div className="panel-label">Inline profile</div>
+            <div className="inline-actions">
+              <button
+                type="button"
+                className="chip-btn"
+                onClick={() => loadPreset(APPENDIX_A)}
+              >
+                Appendix A · 52F T2DM
+              </button>
+              <button
+                type="button"
+                className="chip-btn"
+                onClick={() => loadPreset(EMPTY)}
+              >
+                Clear
+              </button>
+            </div>
 
-          <Section title="Demographics">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <Field label="Age" htmlFor="age">
+            <div className="field" style={{ marginTop: 14 }}>
+              <label>Demographics</label>
+              <div className="form-grid">
                 <input
-                  id="age"
                   type="number"
+                  className="field-input"
+                  placeholder="Age"
                   min={1}
                   max={120}
                   required
@@ -191,28 +207,23 @@ export function IntakeForm({ loading, onSubmit }: Props) {
                   onChange={(e) =>
                     setDemo({ ...demo, age: Number(e.target.value) })
                   }
-                  className={inputCls}
                 />
-              </Field>
-              <Field label="Sex" htmlFor="sex">
                 <select
-                  id="sex"
+                  className="field-input"
                   required
                   value={demo.sex}
                   onChange={(e) =>
                     setDemo({ ...demo, sex: e.target.value as Sex })
                   }
-                  className={inputCls}
                 >
                   <option value="F">Female</option>
                   <option value="M">Male</option>
                   <option value="OTHER">Other</option>
                 </select>
-              </Field>
-              <Field label="BMI" htmlFor="bmi">
                 <input
-                  id="bmi"
                   type="number"
+                  className="field-input"
+                  placeholder="BMI"
                   step="0.1"
                   min={10}
                   max={80}
@@ -220,73 +231,64 @@ export function IntakeForm({ loading, onSubmit }: Props) {
                   onChange={(e) =>
                     setDemo({ ...demo, bmi: Number(e.target.value) })
                   }
-                  className={inputCls}
                 />
-              </Field>
-              <Field label="Region" htmlFor="region">
                 <input
-                  id="region"
+                  className="field-input"
+                  placeholder="Region"
                   required
                   value={demo.region_code}
                   onChange={(e) =>
                     setDemo({ ...demo, region_code: e.target.value })
                   }
-                  className={inputCls}
                 />
-              </Field>
-              <Field label="Sun hrs/wk" htmlFor="sun">
                 <input
-                  id="sun"
                   type="number"
+                  className="field-input"
+                  placeholder="Sun hrs/wk"
                   step="0.5"
                   min={0}
                   value={sun}
                   onChange={(e) => setSun(Number(e.target.value))}
-                  className={inputCls}
                 />
-              </Field>
-              <Field label="Diet" htmlFor="diet">
                 <select
-                  id="diet"
+                  className="field-input"
                   value={diet}
                   onChange={(e) => setDiet(e.target.value)}
-                  className={inputCls}
                 >
                   <option value="omnivore">Omnivore</option>
                   <option value="vegetarian">Vegetarian</option>
                   <option value="vegan">Vegan</option>
                 </select>
-              </Field>
+              </div>
+              <div className="toggle-row">
+                <Toggle
+                  label="Pregnant"
+                  checked={!!demo.pregnancy_status}
+                  onChange={(v) => setDemo({ ...demo, pregnancy_status: v })}
+                />
+                <Toggle
+                  label="Indoor work"
+                  checked={!!demo.indoor_occupation}
+                  onChange={(v) => setDemo({ ...demo, indoor_occupation: v })}
+                />
+                <Toggle
+                  label="Veiled dress"
+                  checked={!!demo.veiled_dress}
+                  onChange={(v) => setDemo({ ...demo, veiled_dress: v })}
+                />
+              </div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-4">
-              <Toggle
-                label="Pregnant"
-                checked={!!demo.pregnancy_status}
-                onChange={(v) => setDemo({ ...demo, pregnancy_status: v })}
-              />
-              <Toggle
-                label="Indoor work"
-                checked={!!demo.indoor_occupation}
-                onChange={(v) => setDemo({ ...demo, indoor_occupation: v })}
-              />
-              <Toggle
-                label="Veiled dress"
-                checked={!!demo.veiled_dress}
-                onChange={(v) => setDemo({ ...demo, veiled_dress: v })}
-              />
-            </div>
-          </Section>
+          </section>
 
-          <Section
-            title="Conditions"
-            action={() =>
-              setConditions([...conditions, { code: "", system: "ICD-10" }])
-            }
-          >
-            {conditions.length === 0 && <Empty>No conditions added.</Empty>}
+          <section className="panel">
+            <div className="panel-label">Conditions</div>
+            {conditions.length === 0 && (
+              <p className="hint">No conditions added.</p>
+            )}
             {conditions.map((c, i) => (
-              <Row key={i} onRemove={() => setConditions(rm(conditions, i))}>
+              <div key={i} className="form-row" style={{ marginTop: 8 }}>
                 <input
+                  className="field-input"
                   placeholder="ICD-10 (e.g. E11.9)"
                   value={c.code}
                   onChange={(e) =>
@@ -294,73 +296,108 @@ export function IntakeForm({ loading, onSubmit }: Props) {
                       upd(conditions, i, { ...c, code: e.target.value }),
                     )
                   }
-                  className={`${inputCls} font-mono col-span-full`}
                 />
-              </Row>
+                <button
+                  type="button"
+                  className="row-remove"
+                  aria-label="Remove condition"
+                  onClick={() => setConditions(rm(conditions, i))}
+                >
+                  ×
+                </button>
+              </div>
             ))}
-          </Section>
+            <button
+              type="button"
+              className="chip-btn"
+              style={{ marginTop: 10 }}
+              onClick={() =>
+                setConditions([...conditions, { code: "", system: "ICD-10" }])
+              }
+            >
+              + add condition
+            </button>
+          </section>
 
-          <Section
-            title="Medications"
-            action={() =>
-              setMeds([...meds, { rxnorm: "", name: "", months_on: 0 }])
-            }
-          >
-            {meds.length === 0 && <Empty>No medications added.</Empty>}
+          <section className="panel">
+            <div className="panel-label">Medications</div>
+            {meds.length === 0 && <p className="hint">No medications added.</p>}
             {meds.map((m, i) => (
-              <Row key={i} onRemove={() => setMeds(rm(meds, i))}>
+              <div key={i} className="form-grid" style={{ marginTop: 8 }}>
                 <input
+                  className="field-input"
                   placeholder="Name"
                   value={m.name}
                   onChange={(e) =>
                     setMeds(upd(meds, i, { ...m, name: e.target.value }))
                   }
-                  className={inputCls}
                 />
                 <input
+                  className="field-input"
                   placeholder="RxNorm"
                   value={m.rxnorm}
                   onChange={(e) =>
                     setMeds(upd(meds, i, { ...m, rxnorm: e.target.value }))
                   }
-                  className={`${inputCls} font-mono`}
                 />
-                <input
-                  type="number"
-                  placeholder="Months"
-                  value={m.months_on ?? 0}
-                  onChange={(e) =>
-                    setMeds(
-                      upd(meds, i, { ...m, months_on: Number(e.target.value) }),
-                    )
-                  }
-                  className={`${inputCls} font-mono`}
-                />
-              </Row>
+                <div className="form-row">
+                  <input
+                    type="number"
+                    className="field-input"
+                    placeholder="Months"
+                    value={m.months_on ?? 0}
+                    onChange={(e) =>
+                      setMeds(
+                        upd(meds, i, {
+                          ...m,
+                          months_on: Number(e.target.value),
+                        }),
+                      )
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="row-remove"
+                    aria-label="Remove medication"
+                    onClick={() => setMeds(rm(meds, i))}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
             ))}
-          </Section>
+            <button
+              type="button"
+              className="chip-btn"
+              style={{ marginTop: 10 }}
+              onClick={() =>
+                setMeds([...meds, { rxnorm: "", name: "", months_on: 0 }])
+              }
+            >
+              + add medication
+            </button>
+          </section>
 
-          <Section
-            title="Labs (optional)"
-            action={() =>
-              setLabs([...labs, { loinc: "", value: 0, unit: "" }])
-            }
-          >
+          <section className="panel">
+            <div className="panel-label">Labs (optional)</div>
             {labs.length === 0 && (
-              <Empty>No labs. A measured value will dominate the prior.</Empty>
+              <p className="hint">
+                No labs. A measured value will dominate the prior.
+              </p>
             )}
             {labs.map((l, i) => (
-              <Row key={i} onRemove={() => setLabs(rm(labs, i))}>
+              <div key={i} className="form-grid" style={{ marginTop: 8 }}>
                 <input
-                  placeholder="LOINC (e.g. 1989-3)"
+                  className="field-input"
+                  placeholder="LOINC"
                   value={l.loinc}
                   onChange={(e) =>
                     setLabs(upd(labs, i, { ...l, loinc: e.target.value }))
                   }
-                  className={`${inputCls} font-mono`}
                 />
                 <input
                   type="number"
+                  className="field-input"
                   placeholder="Value"
                   value={l.value}
                   onChange={(e) =>
@@ -368,120 +405,60 @@ export function IntakeForm({ loading, onSubmit }: Props) {
                       upd(labs, i, { ...l, value: Number(e.target.value) }),
                     )
                   }
-                  className={`${inputCls} font-mono`}
                 />
-                <input
-                  placeholder="Unit"
-                  value={l.unit}
-                  onChange={(e) =>
-                    setLabs(upd(labs, i, { ...l, unit: e.target.value }))
-                  }
-                  className={inputCls}
-                />
-              </Row>
+                <div className="form-row">
+                  <input
+                    className="field-input"
+                    placeholder="Unit"
+                    value={l.unit}
+                    onChange={(e) =>
+                      setLabs(upd(labs, i, { ...l, unit: e.target.value }))
+                    }
+                  />
+                  <button
+                    type="button"
+                    className="row-remove"
+                    aria-label="Remove lab"
+                    onClick={() => setLabs(rm(labs, i))}
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
             ))}
-          </Section>
+            <button
+              type="button"
+              className="chip-btn"
+              style={{ marginTop: 10 }}
+              onClick={() =>
+                setLabs([...labs, { loinc: "", value: 0, unit: "" }])
+              }
+            >
+              + add lab
+            </button>
+          </section>
         </>
       )}
 
       {validationError && (
-        <p className="text-sm text-danger" role="alert">
+        <p className="field-error" role="alert">
           {validationError}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full rounded-md bg-signal px-4 py-3 font-medium text-ground transition-colors hover:bg-signal/90 disabled:cursor-not-allowed disabled:bg-signalDim disabled:text-inkMute"
-      >
-        {loading ? "Scoring…" : "Run recommendation engine"}
+      <button type="submit" className="run-btn" disabled={loading}>
+        <span className="dot" aria-hidden />
+        {loading ? "Running gates…" : "Run recommendation engine"}
       </button>
     </form>
   );
 }
-
-const inputCls =
-  "w-full rounded-md border border-panelEdge bg-ground px-3 py-2 text-sm text-ink placeholder:text-inkFaint focus:border-signal";
 
 function rm<T>(arr: T[], i: number): T[] {
   return arr.filter((_, idx) => idx !== i);
 }
 function upd<T>(arr: T[], i: number, v: T): T[] {
   return arr.map((x, idx) => (idx === i ? v : x));
-}
-
-function Section({
-  title,
-  children,
-  action,
-}: {
-  title: string;
-  children: React.ReactNode;
-  action?: () => void;
-}) {
-  return (
-    <fieldset className="rounded-panel border border-panelEdge bg-panel p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <legend className="text-2xs uppercase tracking-wider text-inkMute">
-          {title}
-        </legend>
-        {action && (
-          <button
-            type="button"
-            onClick={action}
-            className="font-mono text-sm text-signal hover:text-signal/80"
-          >
-            + add
-          </button>
-        )}
-      </div>
-      <div className="space-y-2">{children}</div>
-    </fieldset>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="block" htmlFor={htmlFor}>
-      <span className="mb-1 block text-2xs uppercase tracking-wider text-inkFaint">
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function Row({
-  children,
-  onRemove,
-}: {
-  children: React.ReactNode;
-  onRemove: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="grid flex-1 grid-cols-[1fr_auto_auto] gap-2 max-[420px]:grid-cols-1">
-        {children}
-      </div>
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label="Remove row"
-        className="shrink-0 rounded-md border border-panelEdge px-2 py-2 font-mono text-inkFaint hover:border-danger hover:text-danger"
-      >
-        ×
-      </button>
-    </div>
-  );
 }
 
 function Toggle({
@@ -494,69 +471,15 @@ function Toggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2">
+    <label className="toggle-label">
       <button
         type="button"
         role="switch"
         aria-checked={checked}
+        className={`toggle-switch ${checked ? "on" : ""}`}
         onClick={() => onChange(!checked)}
-        className={`h-4 w-7 rounded-full border transition-colors ${
-          checked ? "border-signal bg-signalDim" : "border-panelEdge bg-ground"
-        }`}
-      >
-        <span
-          className={`block h-3 w-3 rounded-full transition-transform ${
-            checked ? "translate-x-3.5 bg-signal" : "translate-x-0.5 bg-inkFaint"
-          }`}
-        />
-      </button>
-      <span className="text-sm text-inkMute">{label}</span>
+      />
+      {label}
     </label>
-  );
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
-  return <p className="text-sm text-inkFaint">{children}</p>;
-}
-
-function PresetButton({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-md border border-panelEdge bg-panel px-3 py-1.5 text-sm text-inkMute transition-colors hover:border-signal hover:text-signal"
-    >
-      {children}
-    </button>
-  );
-}
-
-function ModeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-        active
-          ? "border-signal bg-signalDim/40 text-signal"
-          : "border-panelEdge text-inkMute hover:border-signal hover:text-signal"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

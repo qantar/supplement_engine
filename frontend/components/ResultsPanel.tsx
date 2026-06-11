@@ -1,83 +1,160 @@
+"use client";
+
+import { useState } from "react";
 import type { RecommendationResponse } from "@/lib/types";
+import { formatSummary } from "@/lib/api";
+import { shortId } from "@/lib/format";
+import { useToast } from "@/components/Toast";
 import { RecommendationCard } from "./RecommendationCard";
-import { SessionMetaStrip } from "./ExportActions";
 
 interface Props {
   data: RecommendationResponse;
-  onFeedbackSubmitted?: () => void;
+  animateCards?: boolean;
 }
 
-export function ResultsPanel({ data, onFeedbackSubmitted }: Props) {
+export function SessionLedger({ data }: { data: RecommendationResponse }) {
+  const { showToast } = useToast();
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  async function copy(value: string, label: string) {
+    await navigator.clipboard.writeText(value);
+    setCopiedField(label);
+    window.setTimeout(() => setCopiedField(null), 1500);
+  }
+
+  async function copySummary() {
+    try {
+      await navigator.clipboard.writeText(formatSummary(data));
+      showToast("Summary copied");
+    } catch {
+      showToast("Copy failed — select and copy manually");
+    }
+  }
+
   return (
-    <div className="space-y-5 print-results">
-      <SessionMetaStrip data={data} />
+    <section className="panel">
+      <dl className="ledger">
+        <div>
+          <dt>Session</dt>
+          <dd>
+            <button
+              type="button"
+              className="copyable-id"
+              onClick={() => copy(data.session_id, "session")}
+              title="Copy session ID"
+            >
+              {copiedField === "session"
+                ? "Copied"
+                : shortId(data.session_id)}
+            </button>
+          </dd>
+        </div>
+        <div>
+          <dt>Model</dt>
+          <dd>{data.model_version}</dd>
+        </div>
+        <div>
+          <dt>Latency</dt>
+          <dd>{data.execution_ms > 0 ? `${data.execution_ms} ms` : "—"}</dd>
+        </div>
+        <div>
+          <dt>Snapshot</dt>
+          <dd>{data.evidence_snapshot_id ?? "—"}</dd>
+        </div>
+        <div>
+          <dt>Review in</dt>
+          <dd>
+            {data.next_review_in_weeks != null
+              ? `${data.next_review_in_weeks} wks`
+              : "—"}
+          </dd>
+        </div>
+        <div className="ledger-actions print:hidden">
+          <button type="button" className="btn-secondary" onClick={() => window.print()}>
+            Print summary
+          </button>
+          <button type="button" className="btn-secondary" onClick={copySummary}>
+            Copy summary
+          </button>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+export function ResultsPanel({ data, animateCards = true }: Props) {
+  return (
+    <div className="print-results">
+      <SessionLedger data={data} />
 
       {data.profile_warnings && data.profile_warnings.length > 0 && (
-        <div className="rounded-panel border border-warn/30 bg-warn/5 px-5 py-3">
-          <p className="mb-1 text-2xs uppercase tracking-wider text-warn">
-            Profile notes
-          </p>
-          <ul className="space-y-0.5 text-sm text-inkMute">
+        <section className="profile-notes">
+          <div className="panel-label">Profile notes</div>
+          <ul>
             {data.profile_warnings.map((w, i) => (
               <li key={i}>{w}</li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
 
       {data.requires_clinician && (
-        <div className="rounded-panel border border-danger/30 bg-danger/5 px-5 py-4">
-          <p className="text-sm font-medium text-danger">
-            This session requires clinician review.
-          </p>
-          {data.clinician_handoff && (
-            <p className="mt-1 whitespace-pre-wrap text-sm text-inkMute">
-              {data.clinician_handoff}
-            </p>
-          )}
+        <div className="review-banner" role="alert">
+          <div className="icon" aria-hidden>
+            !
+          </div>
+          <div>
+            <h3>This session requires clinician review.</h3>
+            {data.clinician_handoff && <p>{data.clinician_handoff}</p>}
+            {!data.clinician_handoff && data.recommendations.length > 0 && (
+              <p>
+                Indicated:{" "}
+                {data.recommendations.map((r) => r.supplement.name).join(", ")}
+                . Model <code>{data.model_version}</code>.
+              </p>
+            )}
+          </div>
         </div>
       )}
 
       {data.recommendations.length === 0 ? (
-        <div className="rounded-panel border border-panelEdge bg-panel px-5 py-10 text-center">
-          <p className="text-inkMute">
+        <section className="panel">
+          <p style={{ color: "rgb(var(--muted))", textAlign: "center", padding: "24px 0" }}>
             No recommendations cleared the threshold for this profile.
           </p>
-          <p className="mt-1 text-sm text-inkFaint">
+          <p className="hint" style={{ textAlign: "center" }}>
             That is a valid result — a well-supplemented, low-risk patient.
           </p>
-        </div>
+        </section>
       ) : (
-        <div className="space-y-4">
-          {data.recommendations.map((rec) => (
+        <div className="rec-cards">
+          {data.recommendations.map((rec, i) => (
             <RecommendationCard
               key={rec.rec_id}
               rec={rec}
               sessionId={data.session_id}
-              onFeedbackSubmitted={onFeedbackSubmitted}
+              index={i}
+              animateIn={animateCards}
             />
           ))}
         </div>
       )}
 
       {data.suppressed.length > 0 && (
-        <div className="rounded-panel border border-panelEdge bg-panel px-5 py-4">
-          <p className="mb-2 text-2xs uppercase tracking-wider text-inkMute">
-            Suppressed by safety gate
-          </p>
-          <ul className="space-y-1.5">
+        <section className="panel suppressed-panel">
+          <div className="panel-label">Suppressed by safety gate</div>
+          <ul>
             {data.suppressed.map((s, i) => (
-              <li key={i} className="flex items-baseline gap-2 text-sm">
-                <span className="h-1.5 w-1.5 shrink-0 translate-y-1.5 rounded-full bg-danger" />
-                <span className="font-mono text-ink">{s.nutrient_id}</span>
-                <span className="text-inkMute">— {s.reason}</span>
+              <li key={i}>
+                <span>{s.nutrient_id}</span>
+                <span>— {s.reason}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
 
-      <p className="px-1 text-2xs text-inkFaint">{data.disclaimer}</p>
+      <p className="disclaimer">{data.disclaimer}</p>
     </div>
   );
 }

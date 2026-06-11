@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { SessionHistoryItem } from "@/lib/types";
 import { fetchPatientHistory } from "@/lib/api";
+import { shortId } from "@/lib/format";
 
 interface Props {
   patientId: string | null;
@@ -46,63 +47,47 @@ export function SessionHistoryPanel({
   if (!patientId) return null;
 
   return (
-    <div className="rounded-panel border border-panelEdge bg-panel">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-5 py-3 text-left"
-        aria-expanded={open}
-      >
-        <span className="text-2xs uppercase tracking-wider text-inkMute">
-          Session history
+    <details
+      className="panel history-panel print:hidden"
+      open={open}
+      onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}
+    >
+      <summary>
+        <span className="panel-label">Session history</span>
+        <span className="plus" aria-hidden>
+          +
         </span>
-        <span className="font-mono text-sm text-inkFaint">{open ? "−" : "+"}</span>
-      </button>
-
-      {open && (
-        <div className="border-t border-panelEdge px-5 py-4">
-          {loading && (
-            <p className="text-sm text-inkFaint">Loading prior sessions…</p>
-          )}
-          {error && (
-            <p className="text-sm text-danger" role="alert">
-              {error}
-            </p>
-          )}
-          {!loading && !error && items.length === 0 && (
-            <p className="text-sm text-inkFaint">No prior sessions for this patient.</p>
-          )}
-          {!loading && items.length > 0 && (
-            <ul className="space-y-2">
-              {items.map((item) => (
-                <li key={item.session_id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelectSession(item.session_id)}
-                    className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
-                      activeSessionId === item.session_id
-                        ? "border-signal bg-signalDim/30 text-ink"
-                        : "border-panelEdge text-inkMute hover:border-signal hover:text-signal"
-                    }`}
-                  >
-                    <div className="font-mono text-2xs text-inkFaint">
-                      {new Date(item.served_at).toLocaleString()}
-                    </div>
-                    <div className="mt-0.5 truncate font-mono text-xs">
-                      {item.session_id}
-                    </div>
-                    {item.requires_clinician && (
-                      <span className="mt-1 inline-block text-2xs text-danger">
-                        Clinician review
-                      </span>
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-    </div>
+      </summary>
+      <div>
+        {loading && <p className="hint">Loading prior sessions…</p>}
+        {error && (
+          <p className="field-error" role="alert">
+            {error}
+          </p>
+        )}
+        {!loading && !error && items.length === 0 && (
+          <p className="hint">No prior sessions for this patient.</p>
+        )}
+        {items.map((item) => (
+          <button
+            key={item.session_id}
+            type="button"
+            className={`history-row ${activeSessionId === item.session_id ? "active" : ""}`}
+            onClick={() => onSelectSession(item.session_id)}
+          >
+            <span>
+              <b>{shortId(item.session_id)}</b>
+              {item.requires_clinician && (
+                <span style={{ color: "rgb(var(--red))", marginLeft: 8 }}>
+                  · review
+                </span>
+              )}
+            </span>
+            <span>{new Date(item.served_at).toLocaleString()}</span>
+            <span>{item.model_version}</span>
+          </button>
+        ))}
+      </div>
+    </details>
   );
 }

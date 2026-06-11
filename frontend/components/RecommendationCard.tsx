@@ -1,236 +1,275 @@
 "use client";
 
-import { useState } from "react";
-import type { FeedbackAction, RecommendationOut } from "@/lib/types";
+import { useEffect, useState } from "react";
+import type { RecommendationOut } from "@/lib/types";
 import { gradeLabel, submitFeedback } from "@/lib/api";
-import { ConfidenceMeter, SeverityPill } from "./Meters";
+import { formatDoseFrequency } from "@/lib/format";
+import { useToast } from "@/components/Toast";
+
+const ICON_PASS = (
+  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M2 6.5l2.6 2.6L10 3.5" />
+  </svg>
+);
+const ICON_FLAG = (
+  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M6 2.5v4.5M6 9.4v.1" />
+  </svg>
+);
+
+type FeedbackChoice = "approve" | "adjust" | "reject" | null;
 
 interface Props {
   rec: RecommendationOut;
   sessionId: string;
-  onFeedbackSubmitted?: () => void;
+  index: number;
+  animateIn?: boolean;
 }
 
 export function RecommendationCard({
   rec,
   sessionId,
-  onFeedbackSubmitted,
+  index,
+  animateIn = true,
 }: Props) {
-  const [open, setOpen] = useState(rec.rank <= 2);
-  const [notes, setNotes] = useState("");
+  const { showToast } = useToast();
+  const [visible, setVisible] = useState(!animateIn);
+  const [rationaleOpen, setRationaleOpen] = useState(index < 2);
+  const [feedbackChoice, setFeedbackChoice] = useState<FeedbackChoice>(null);
   const [feedbackState, setFeedbackState] = useState<
     "idle" | "sending" | "done" | "error"
   >("idle");
-  const [feedbackAction, setFeedbackAction] = useState<FeedbackAction | null>(
-    null,
-  );
-  const [feedbackError, setFeedbackError] = useState<string | null>(null);
-  const dose = rec.dose;
+  const [notice, setNotice] = useState<string | null>(null);
 
-  async function sendFeedback(action: FeedbackAction) {
+  const confPct = Math.round(rec.confidence_score * 100);
+  const ulPct = rec.dose.ul_pct_used ?? 0;
+  const confLow = confPct < 65;
+  const ulHigh = ulPct >= 80;
+  const ulOver = ulPct > 100;
+  const gated = rec.requires_clinician || ulOver || ulHigh;
+
+  const gates = buildGateChips(rec);
+
+  useEffect(() => {
+    if (!animateIn) return;
+    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? 0
+      : 120 * index + 80;
+    const t = window.setTimeout(() => setVisible(true), delay);
+    return () => window.clearTimeout(t);
+  }, [animateIn, index]);
+
+  async function sendFeedback(
+    choice: FeedbackChoice,
+    action: "accepted" | "modified" | "rejected",
+  ) {
+    if (!choice) return;
     setFeedbackState("sending");
-    setFeedbackError(null);
     try {
       await submitFeedback({
         rec_id: rec.rec_id,
         session_id: sessionId,
         action,
-        notes: notes.trim() || null,
+        notes: null,
       });
-      setFeedbackAction(action);
+      setFeedbackChoice(choice);
       setFeedbackState("done");
-      onFeedbackSubmitted?.();
-    } catch (e) {
+      const messages = {
+        approve: "Approved by clinician — released to plan.",
+        adjust: "Marked for dose adjustment — held.",
+        reject: "Rejected by clinician — removed from plan.",
+      };
+      setNotice(messages[choice]);
+      showToast(`${rec.supplement.name}: ${choice}`);
+    } catch {
       setFeedbackState("error");
-      setFeedbackError(
-        e instanceof Error ? e.message : "Could not submit feedback.",
-      );
+      showToast("Could not save feedback");
     }
   }
 
+  const defaultNotice = gated
+    ? confLow
+      ? `Low confidence (${confPct}%) — clinician review required.`
+      : ulOver
+        ? "Dose exceeds upper limit — blocked until clinician overrides."
+        : "Clinician review required before this is acted on."
+    : "Cleared all gates — releasable on approval.";
+
+  const dose = rec.dose;
+
   return (
-    <article className="rounded-panel border border-panelEdge bg-panel shadow-panel">
-      <div className="flex items-start gap-4 p-5">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-panelEdge font-mono text-sm text-inkMute">
-          {String(rec.rank).padStart(2, "0")}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <h3 className="text-lg font-semibold text-ink">
-              {rec.supplement.name}
-            </h3>
-            <span className="font-mono text-2xs uppercase tracking-wider text-inkFaint">
-              {rec.supplement.form}
-            </span>
+    <article
+      className={`rec-card ${visible ? "in" : ""} ${gated ? "gated" : ""}`}
+    >
+      <div className="rec-card-main">
+        <div>
+          <div className="rec-rank">
+            № {String(rec.rank).padStart(2, "0")} · RANKED BY EVIDENCE
           </div>
-          <p className="mt-0.5 text-2xs uppercase tracking-wider text-inkFaint">
-            {gradeLabel(rec.evidence_grade)} · grade {rec.evidence_grade}
-          </p>
+          <h2>
+            {rec.supplement.name}{" "}
+            <small>{rec.supplement.form}</small>
+          </h2>
+          <span className={`grade-badge ${rec.evidence_grade}`}>
+            <i />
+            {gradeLabel(rec.evidence_grade)} · Grade {rec.evidence_grade}
+          </span>
         </div>
-
         {dose.amount != null && (
-          <div className="shrink-0 text-right">
-            <div className="font-mono text-2xl leading-none text-signal">
-              {dose.amount}
-              <span className="ml-1 text-sm text-inkMute">{dose.unit}</span>
+          <div className="rec-dose">
+            <div className="num">
+              {dose.amount.toLocaleString()}
+              <u>{dose.unit}</u>
             </div>
-            <div className="mt-1 text-2xs uppercase tracking-wider text-inkFaint">
-              {dose.frequency?.replace(/_/g, " ")}
-              {dose.with_food ? " · with food" : ""}
+            <div className="when">
+              {formatDoseFrequency(dose.frequency, dose.with_food)}
+              {dose.cap_applied ? " · capped" : ""}
             </div>
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 border-t border-panelEdge px-5 py-4 sm:grid-cols-[1fr_auto]">
-        <ConfidenceMeter score={rec.confidence_score} />
-        {dose.ul_pct_used != null && (
-          <div className="flex items-center gap-2 sm:justify-end">
-            <span className="text-2xs uppercase tracking-wider text-inkFaint">
-              UL used
-            </span>
-            <span
-              className={`font-mono text-sm ${
-                dose.cap_applied ? "text-warn" : "text-inkMute"
-              }`}
-            >
-              {dose.ul_pct_used}%{dose.cap_applied ? " · capped" : ""}
-            </span>
+      <div className="rec-meters">
+        <div className="meter-row">
+          <div className="meter-head">
+            <span>Confidence</span>
+            <b className={confLow ? "low" : ""}>
+              {confPct}% · {confLow ? "Low" : confPct < 80 ? "Moderate" : "High"}
+            </b>
           </div>
-        )}
-      </div>
-
-      {rec.warnings.length > 0 && (
-        <div className="space-y-2 border-t border-panelEdge px-5 py-4">
-          {rec.warnings.map((w, i) => (
+          <div className="meter-track">
             <div
-              key={i}
-              className="flex flex-wrap items-baseline gap-x-3 gap-y-1"
-            >
-              <SeverityPill severity={w.severity} />
-              <span className="text-sm text-inkMute">
-                <span className="text-ink">{w.with_agent}</span> — {w.action}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {rec.requires_clinician && (
-        <div className="flex items-center gap-2 border-t border-panelEdge bg-danger/5 px-5 py-3">
-          <span className="h-1.5 w-1.5 rounded-full bg-danger" />
-          <span className="text-sm text-danger">
-            Clinician review required before this is acted on.
-          </span>
-        </div>
-      )}
-
-      <div className="border-t border-panelEdge px-5 py-4 print:hidden">
-        <p className="mb-2 text-2xs uppercase tracking-wider text-inkMute">
-          Clinician feedback
-        </p>
-        {feedbackState === "done" && feedbackAction ? (
-          <p className="text-sm text-ok">
-            Recorded: {feedbackAction.replace(/_/g, " ")}
-          </p>
-        ) : (
-          <>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional notes"
-              rows={2}
-              disabled={feedbackState === "sending"}
-              className="mb-2 w-full rounded-md border border-panelEdge bg-ground px-3 py-2 text-sm text-ink placeholder:text-inkFaint focus:border-signal"
+              className={`meter-fill ${confLow ? "amber" : ""}`}
+              style={{ width: visible ? `${confPct}%` : "0" }}
             />
-            <div className="flex flex-wrap gap-2">
-              <FeedbackBtn
-                label="Accept"
-                disabled={feedbackState === "sending"}
-                onClick={() => sendFeedback("accepted")}
-              />
-              <FeedbackBtn
-                label="Reject"
-                disabled={feedbackState === "sending"}
-                onClick={() => sendFeedback("rejected")}
-              />
-              <FeedbackBtn
-                label="Adverse event"
-                tone="danger"
-                disabled={feedbackState === "sending"}
-                onClick={() => sendFeedback("adverse_event")}
-              />
+          </div>
+        </div>
+        {ulPct > 0 && (
+          <div className="meter-row">
+            <div className="meter-head">
+              <span>Dose vs upper limit</span>
+              <b className={ulOver ? "bad" : ulHigh ? "low" : ""}>
+                {ulPct}% of UL
+              </b>
             </div>
-            {feedbackError && (
-              <p className="mt-2 text-sm text-danger" role="alert">
-                {feedbackError}
-              </p>
-            )}
-          </>
+            <div className="meter-track">
+              <div
+                className={`meter-fill ${ulOver ? "red" : ulHigh ? "amber" : ""}`}
+                style={{ width: visible ? `${Math.min(ulPct, 100)}%` : "0" }}
+              />
+              <div className="meter-tick" style={{ left: "80%" }} title="High-dose policy line (80%)" />
+            </div>
+          </div>
         )}
       </div>
 
-      <div className="border-t border-panelEdge">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="flex w-full items-center justify-between px-5 py-3 text-left"
-          aria-expanded={open}
-        >
-          <span className="text-2xs uppercase tracking-wider text-inkMute">
-            Why · Evidence · Safety
+      <div className="gate-strip">
+        {gates.map(([name, status]) => (
+          <span key={name} className={`status-chip ${status}`}>
+            {status === "pass" ? ICON_PASS : ICON_FLAG}
+            {name}
           </span>
-          <span className="font-mono text-inkFaint">{open ? "−" : "+"}</span>
-        </button>
+        ))}
+      </div>
 
-        {open && (
-          <dl className="space-y-4 px-5 pb-5">
-            <Layer term="Why" detail={rec.rationale.why} />
-            <Layer term="Evidence" detail={rec.rationale.evidence} />
-            <Layer term="Safety" detail={rec.rationale.safety} />
-          </dl>
-        )}
+      {rec.rationale.why && (
+        <p
+          className="rec-rationale"
+          dangerouslySetInnerHTML={{
+            __html: rec.rationale.why.replace(
+              /\*\*(.+?)\*\*/g,
+              "<b>$1</b>",
+            ),
+          }}
+        />
+      )}
+
+      {(rec.rationale.evidence || rec.rationale.safety) && (
+        <>
+          <button
+            type="button"
+            className="rationale-toggle print:hidden"
+            onClick={() => setRationaleOpen((v) => !v)}
+            aria-expanded={rationaleOpen}
+          >
+            Why · Evidence · Safety
+            <span>{rationaleOpen ? "−" : "+"}</span>
+          </button>
+          {rationaleOpen && (
+            <dl className="rationale-detail">
+              {rec.rationale.why && (
+                <div className="rationale-row">
+                  <dt>Why</dt>
+                  <dd>{rec.rationale.why}</dd>
+                </div>
+              )}
+              {rec.rationale.evidence && (
+                <div className="rationale-row">
+                  <dt>Evidence</dt>
+                  <dd>{rec.rationale.evidence}</dd>
+                </div>
+              )}
+              {rec.rationale.safety && (
+                <div className="rationale-row">
+                  <dt>Safety</dt>
+                  <dd>{rec.rationale.safety}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </>
+      )}
+
+      <div className="rec-foot print:hidden">
+        <span className={`rec-notice ${!gated || feedbackChoice === "approve" ? "ok" : ""}`}>
+          <i />
+          {notice ?? defaultNotice}
+        </span>
+        <div className="fb-group" role="group" aria-label={`Feedback for ${rec.supplement.name}`}>
+          <button
+            type="button"
+            className={feedbackChoice === "approve" ? "sel-approve" : ""}
+            disabled={feedbackState === "sending"}
+            onClick={() => sendFeedback("approve", "accepted")}
+          >
+            Approve
+          </button>
+          <button
+            type="button"
+            className={feedbackChoice === "adjust" ? "sel-adjust" : ""}
+            disabled={feedbackState === "sending"}
+            onClick={() => sendFeedback("adjust", "modified")}
+          >
+            Adjust dose
+          </button>
+          <button
+            type="button"
+            className={feedbackChoice === "reject" ? "sel-reject" : ""}
+            disabled={feedbackState === "sending"}
+            onClick={() => sendFeedback("reject", "rejected")}
+          >
+            Reject
+          </button>
+        </div>
       </div>
     </article>
   );
 }
 
-function FeedbackBtn({
-  label,
-  onClick,
-  disabled,
-  tone = "default",
-}: {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  tone?: "default" | "danger";
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={`rounded-md border px-3 py-1.5 text-sm transition-colors disabled:opacity-50 ${
-        tone === "danger"
-          ? "border-danger/40 text-danger hover:bg-danger/10"
-          : "border-panelEdge text-inkMute hover:border-signal hover:text-signal"
-      }`}
-    >
-      {label}
-    </button>
+function buildGateChips(
+  rec: RecommendationOut,
+): [string, "pass" | "flag"][] {
+  const interactFlag = rec.warnings.some(
+    (w) => w.severity === "major" || w.severity === "contraindicated",
   );
-}
+  const ulPct = rec.dose.ul_pct_used ?? 0;
+  const ulFlag = ulPct >= 80 || rec.dose.cap_applied;
+  const clinFlag = rec.requires_clinician;
 
-function Layer({ term, detail }: { term: string; detail: string }) {
-  if (!detail) return null;
-  return (
-    <div className="grid grid-cols-[5.5rem_1fr] gap-3">
-      <dt className="border-l-2 border-signalDim pl-2 text-2xs uppercase tracking-wider text-signal">
-        {term}
-      </dt>
-      <dd className="text-sm leading-relaxed text-inkMute">{detail}</dd>
-    </div>
-  );
+  return [
+    ["Evidence", "pass"],
+    ["Interactions", interactFlag ? "flag" : "pass"],
+    ["Upper limit", ulFlag ? "flag" : "pass"],
+    ["Clinician gate", clinFlag ? "flag" : "pass"],
+  ];
 }
