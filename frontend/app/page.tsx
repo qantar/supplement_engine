@@ -165,10 +165,10 @@ function ConsolePage() {
   const showResults = data && !loading;
 
   return (
-    <main className="app-wrap">
+    <main>
       <AppHeader modelVersion={data?.model_version} />
-
-      <div className="app-cols">
+      <div className="app-wrap">
+        <div className="app-cols">
         <section aria-label="Patient intake" className="print:hidden">
           <IntakeForm loading={loading} onSubmit={runScore} />
         </section>
@@ -209,6 +209,7 @@ function ConsolePage() {
           )}
         </section>
       </div>
+    </div>
     </main>
   );
 }
