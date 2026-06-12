@@ -1,25 +1,25 @@
-/** Coded "How it works" visual: deterministic safety gate.
- *  Five sequentially-revealed gate rows with status pills. */
+/** Safety gate mini — matches reference image 3:
+ *  large pill cards with numbered teal circles, connector lines,
+ *  status pills (PASS/REVIEW/BLOCKED). Sequential reveal animation. */
 const GATES = [
-  { name: "Drug interaction screen", status: "pass", label: "PASS" },
-  { name: "Disease contraindication", status: "pass", label: "PASS" },
-  { name: "Upper-limit enforcement", status: "review", label: "REVIEW" },
-  { name: "Nutrient antagonism", status: "pass", label: "PASS" },
-  { name: "Clinician escalation", status: "blocked", label: "HOLD" },
+  { name: "Drug Interaction Screen",   status: "pass",    label: "PASS"    },
+  { name: "Disease Contraindication",  status: "pass",    label: "PASS"    },
+  { name: "Upper Limit Check",         status: "review",  label: "70%"     },
+  { name: "Nutrient Antagonism",       status: "pass",    label: "PASS"    },
+  { name: "Clinician Escalation",      status: "blocked", label: "BLOCKED" },
 ] as const;
 
 export function SafetyGateMini() {
   return (
-    <div className="mini-visual mini-gates" aria-hidden>
+    <div className="sgm-wrap" aria-hidden>
       {GATES.map((g, i) => (
-        <div className="mini-gate" key={g.name} style={{ ["--i" as string]: i }}>
-          <span className={`mini-gate-node mini-gate-node--${g.status}`}>
-            {i + 1}
-          </span>
-          <span className="mini-gate-name">{g.name}</span>
-          <span className={`mini-gate-pill mini-gate-pill--${g.status}`}>
-            {g.label}
-          </span>
+        <div key={g.name} className="sgm-row" style={{ ["--i" as string]: i }}>
+          {i > 0 && <span className={`sgm-line sgm-line--${GATES[i - 1].status}`} />}
+          <div className={`sgm-card sgm-card--${g.status}`}>
+            <span className={`sgm-num sgm-num--${g.status}`}>{i + 1}</span>
+            <span className="sgm-name">{g.name}</span>
+            <span className={`sgm-pill sgm-pill--${g.status}`}>{g.label}</span>
+          </div>
         </div>
       ))}
     </div>
