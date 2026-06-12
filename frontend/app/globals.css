@@ -517,6 +517,24 @@ body {
   gap: 16px;
 }
 
+/* Entrance: staggered fade-up for the empty/how-it-works stack */
+.empty-wrap > * {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: visual-enter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.empty-wrap > *:nth-child(2) {
+  animation-delay: 140ms;
+}
+
+@keyframes visual-enter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .empty-state {
   border: 1px solid rgb(var(--line));
   border-radius: 12px;
@@ -537,6 +555,18 @@ body {
   width: min(340px, 80%);
   border-radius: 10px;
   border: 1px solid rgb(var(--line));
+  animation: visual-float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes visual-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .howitworks {
@@ -553,12 +583,14 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.2s, transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.25s;
 }
 
 .howitworks-card:hover {
   border-color: rgb(var(--blue));
-  transform: translateY(-1px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(13, 24, 41, 0.1);
 }
 
 .howitworks-img {
@@ -566,6 +598,11 @@ body {
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-bottom: 1px solid rgb(var(--line));
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.howitworks-card:hover .howitworks-img {
+  transform: scale(1.03);
 }
 
 .howitworks-copy {
@@ -586,6 +623,20 @@ body {
 @media (max-width: 720px) {
   .howitworks {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-wrap > *,
+  .empty-visual,
+  .howitworks-img,
+  .howitworks-card {
+    animation: none !important;
+    transition: none !important;
+  }
+  .empty-wrap > * {
+    opacity: 1;
+    transform: none;
   }
 }
 
