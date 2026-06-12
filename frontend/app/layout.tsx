@@ -1,28 +1,11 @@
 import type { Metadata } from "next";
-import { Inconsolata, Inter, Newsreader } from "next/font/google";
+// Self-hosted variable fonts — hermetic builds, no Google Fonts network
+// dependency at build time (Docker-safe, offline-safe).
+import "@fontsource-variable/inter";
+import "@fontsource-variable/newsreader";
+import "@fontsource-variable/newsreader/wght-italic.css";
+import "@fontsource-variable/inconsolata";
 import "./globals.css";
-
-const sans = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const serif = Newsreader({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
-  variable: "--font-serif",
-  display: "swap",
-});
-
-const mono = Inconsolata({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Supplement Engine — Evidence-ranked recommendations",
@@ -38,11 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${sans.variable} ${serif.variable} ${mono.variable}`}
-    >
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
