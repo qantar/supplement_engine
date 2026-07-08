@@ -130,6 +130,7 @@ export interface RecommendationResponse {
   served_at: string;
   recommendations: RecommendationOut[];
   suppressed: SuppressedOut[];
+  feedback?: SessionFeedbackOut[];
   disclaimer: string;
   profile_warnings?: string[];
 }
@@ -165,9 +166,14 @@ export interface SessionDetailResponse {
   model_version: string;
   evidence_snapshot_id: string | null;
   requires_clinician: boolean;
+  clinician_handoff?: string | null;
   next_review_weeks: number | null;
+  execution_ms?: number;
   served_at: string;
   recommendations: StoredRecommendationOut[];
+  suppressed?: SuppressedOut[];
+  feedback?: SessionFeedbackOut[];
+  disclaimer?: string;
 }
 
 export type FeedbackAction =
@@ -182,6 +188,16 @@ export interface FeedbackRequest {
   source?: "user" | "clinician";
   action: FeedbackAction;
   notes?: string | null;
+}
+
+export interface SessionFeedbackOut {
+  feedback_id: string;
+  rec_id: string;
+  session_id: string | null;
+  source: "user" | "clinician";
+  action: FeedbackAction;
+  notes: string | null;
+  created_at: string;
 }
 
 export type IntakeMode = "stored" | "inline";

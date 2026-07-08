@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { RecommendationOut } from "@/lib/types";
+import type { DoseOut, RecommendationOut, SessionFeedbackOut } from "@/lib/types";
 import { gradeLabel, submitFeedback } from "@/lib/api";
+import {
+  type FeedbackChoice,
+  initialCardState,
+} from "@/lib/feedback";
 import { formatDoseFrequency } from "@/lib/format";
 import { useToast } from "@/components/Toast";
 
@@ -17,13 +21,19 @@ const ICON_FLAG = (
   </svg>
 );
 
-type FeedbackChoice = "approve" | "adjust" | "reject" | null;
+type RationaleTab = "why" | "evidence" | "safety";
 
 interface Props {
   rec: RecommendationOut;
   sessionId: string;
   index: number;
   animateIn?: boolean;
+  initialFeedback?: SessionFeedbackOut | null;
+  onReject?: (recId: string) => void;
+}
+
+function stripMarkdown(text: string): string {
+  return text.replace(/\*\*(.+?)\*\*/g, "$1");
 }
 
 export function RecommendationCard({
@@ -31,24 +41,58 @@ export function RecommendationCard({
   sessionId,
   index,
   animateIn = true,
+  initialFeedback = null,
+  onReject,
 }: Props) {
+  const seeded = initialCardState(rec, initialFeedback ?? undefined);
   const { showToast } = useToast();
   const [visible, setVisible] = useState(!animateIn);
-  const [rationaleOpen, setRationaleOpen] = useState(index < 2);
-  const [feedbackChoice, setFeedbackChoice] = useState<FeedbackChoice>(null);
+  const [dismissing, setDismissing] = useState(false);
+  const [activeTab, setActiveTab] = useState<RationaleTab>("why");
+  const [feedbackChoice, setFeedbackChoice] = useState<FeedbackChoice | null>(
+    seeded.choice,
+  );
   const [feedbackState, setFeedbackState] = useState<
     "idle" | "sending" | "done" | "error"
-  >("idle");
-  const [notice, setNotice] = useState<string | null>(null);
+  >(seeded.choice ? "done" : "idle");
+  const [notice, setNotice] = useState<string | null>(seeded.notice);
+  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [adjustAmount, setAdjustAmount] = useState("");
+  const [doseOverride, setDoseOverride] = useState<DoseOut | null>(
+    seeded.doseOverride,
+  );
 
+  const dose = doseOverride ?? rec.dose;
   const confPct = Math.round(rec.confidence_score * 100);
-  const ulPct = rec.dose.ul_pct_used ?? 0;
+  const ulPct = dose.ul_pct_used ?? 0;
   const confLow = confPct < 65;
   const ulHigh = ulPct >= 80;
   const ulOver = ulPct > 100;
   const gated = rec.requires_clinician || ulOver || ulHigh;
+  const approved = feedbackChoice === "approve" && feedbackState === "done";
+  const adjusted = feedbackChoice === "adjust" && feedbackState === "done";
 
-  const gates = buildGateChips(rec);
+  const gates = buildGateChips(rec, dose);
+  const tabDefs: { id: RationaleTab; label: string; text?: string | null }[] = [
+    { id: "why", label: "Why", text: rec.rationale.why },
+    { id: "evidence", label: "Evidence", text: rec.rationale.evidence },
+    { id: "safety", label: "Safety", text: rec.rationale.safety },
+  ];
+  const tabs = tabDefs.filter(
+    (t): t is { id: RationaleTab; label: string; text: string } => Boolean(t.text),
+  );
+
+  const activePanel = tabs.find((t) => t.id === activeTab) ?? tabs[0];
+
+  useEffect(() => {
+    const next = initialCardState(rec, initialFeedback ?? undefined);
+    setFeedbackChoice(next.choice);
+    setFeedbackState(next.choice ? "done" : "idle");
+    setNotice(next.notice);
+    setDoseOverride(next.doseOverride);
+    setAdjustOpen(false);
+    setDismissing(false);
+  }, [rec.rec_id, initialFeedback, rec.dose]);
 
   useEffect(() => {
     if (!animateIn) return;
@@ -59,9 +103,16 @@ export function RecommendationCard({
     return () => window.clearTimeout(t);
   }, [animateIn, index]);
 
+  useEffect(() => {
+    if (adjustOpen && dose.amount != null) {
+      setAdjustAmount(String(dose.amount));
+    }
+  }, [adjustOpen, dose.amount]);
+
   async function sendFeedback(
     choice: FeedbackChoice,
     action: "accepted" | "modified" | "rejected",
+    notes: string | null = null,
   ) {
     if (!choice) return;
     setFeedbackState("sending");
@@ -70,21 +121,70 @@ export function RecommendationCard({
         rec_id: rec.rec_id,
         session_id: sessionId,
         action,
-        notes: null,
+        notes,
       });
       setFeedbackChoice(choice);
       setFeedbackState("done");
+      setAdjustOpen(false);
+
+      if (choice === "reject") {
+        setNotice("Rejected — removed from active plan.");
+        showToast(`${rec.supplement.name} rejected`);
+        setDismissing(true);
+        const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? 0
+          : 320;
+        window.setTimeout(() => onReject?.(rec.rec_id), delay);
+        return;
+      }
+
       const messages = {
-        approve: "Approved by clinician — released to plan.",
-        adjust: "Marked for dose adjustment — held.",
-        reject: "Rejected by clinician — removed from plan.",
+        approve: "Approved — cleared for patient plan.",
+        adjust: "Dose adjusted and logged for audit.",
+        reject: "Rejected — removed from active plan.",
       };
       setNotice(messages[choice]);
-      showToast(`${rec.supplement.name}: ${choice}`);
+      showToast(
+        choice === "approve"
+          ? `${rec.supplement.name} approved`
+          : `${rec.supplement.name} dose updated`,
+      );
     } catch {
       setFeedbackState("error");
       showToast("Could not save feedback");
     }
+  }
+
+  function openAdjust() {
+    setAdjustOpen(true);
+    setFeedbackState("idle");
+    setFeedbackChoice(null);
+    setNotice(null);
+  }
+
+  function cancelAdjust() {
+    setAdjustOpen(false);
+    setAdjustAmount(dose.amount != null ? String(dose.amount) : "");
+  }
+
+  function saveAdjustment() {
+    const parsed = Number.parseFloat(adjustAmount);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      showToast("Enter a valid dose amount");
+      return;
+    }
+    const previous = dose.amount;
+    const unit = dose.unit ?? rec.dose.unit ?? "";
+    setDoseOverride({
+      ...dose,
+      amount: parsed,
+      cap_applied: false,
+    });
+    const note =
+      previous != null
+        ? `Adjusted dose: ${parsed} ${unit} (was ${previous} ${unit})`
+        : `Adjusted dose: ${parsed} ${unit}`;
+    void sendFeedback("adjust", "modified", note);
   }
 
   const defaultNotice = gated
@@ -95,26 +195,36 @@ export function RecommendationCard({
         : "Clinician review required before this is acted on."
     : "Cleared all gates — releasable on approval.";
 
-  const dose = rec.dose;
+  if (dismissing) {
+    return (
+      <article
+        className={`rec-card rec-card--dismissing ${visible ? "in" : ""}`}
+        aria-hidden
+      />
+    );
+  }
 
   return (
     <article
-      className={`rec-card ${visible ? "in" : ""} ${gated ? "gated" : ""}`}
+      className={`rec-card ${visible ? "in" : ""} ${gated ? "gated" : ""} ${
+        approved ? "rec-card--approved" : ""
+      } ${adjusted ? "rec-card--adjusted" : ""}`}
     >
-      <div className="rec-card-main">
-        <div>
-          <div className="rec-rank">
-            № {String(rec.rank).padStart(2, "0")} · RANKED BY EVIDENCE
+      <header className="rec-card-header">
+        <div className="rec-card-id">
+          <span className="rec-rank-pill">{String(rec.rank).padStart(2, "0")}</span>
+          <div>
+            <h2>
+              {rec.supplement.name}
+              <small>{rec.supplement.form}</small>
+            </h2>
+            <span className={`grade-badge ${rec.evidence_grade}`}>
+              <i />
+              {gradeLabel(rec.evidence_grade)} · Grade {rec.evidence_grade}
+            </span>
           </div>
-          <h2>
-            {rec.supplement.name}{" "}
-            <small>{rec.supplement.form}</small>
-          </h2>
-          <span className={`grade-badge ${rec.evidence_grade}`}>
-            <i />
-            {gradeLabel(rec.evidence_grade)} · Grade {rec.evidence_grade}
-          </span>
         </div>
+
         {dose.amount != null && (
           <div className="rec-dose">
             <div className="num">
@@ -124,146 +234,188 @@ export function RecommendationCard({
             <div className="when">
               {formatDoseFrequency(dose.frequency, dose.with_food)}
               {dose.cap_applied ? " · capped" : ""}
+              {adjusted ? " · clinician adjusted" : ""}
             </div>
+          </div>
+        )}
+      </header>
+
+      <div className="rec-card-body">
+        <aside className="rec-card-metrics" aria-label="Scores and gates">
+          <div className="rec-meters">
+            <div className="meter-row">
+              <div className="meter-head">
+                <span>Confidence</span>
+                <b className={confLow ? "low" : ""}>
+                  {confPct}% · {confLow ? "Low" : confPct < 80 ? "Moderate" : "High"}
+                </b>
+              </div>
+              <div className="meter-track">
+                <div
+                  className={`meter-fill ${confLow ? "amber" : ""}`}
+                  style={{ width: visible ? `${confPct}%` : "0" }}
+                />
+              </div>
+            </div>
+            {ulPct > 0 && (
+              <div className="meter-row">
+                <div className="meter-head">
+                  <span>Dose vs UL</span>
+                  <b className={ulOver ? "bad" : ulHigh ? "low" : ""}>
+                    {ulPct}%
+                  </b>
+                </div>
+                <div className="meter-track">
+                  <div
+                    className={`meter-fill ${ulOver ? "red" : ulHigh ? "amber" : ""}`}
+                    style={{ width: visible ? `${Math.min(ulPct, 100)}%` : "0" }}
+                  />
+                  <div className="meter-tick" style={{ left: "80%" }} title="80% policy line" />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <ul className="rec-gates">
+            {gates.map(([name, status]) => (
+              <li key={name} className={`rec-gate rec-gate--${status}`}>
+                <span className="rec-gate-icon" aria-hidden>
+                  {status === "pass" ? ICON_PASS : ICON_FLAG}
+                </span>
+                {name}
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        {tabs.length > 0 && (
+          <div className="rec-card-detail">
+            <div className="rec-tabs" role="tablist" aria-label={`Rationale for ${rec.supplement.name}`}>
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activePanel?.id === tab.id}
+                  className={activePanel?.id === tab.id ? "active" : ""}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            {activePanel?.text && (
+              <div className="rec-tab-panel" role="tabpanel">
+                {stripMarkdown(activePanel.text)}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      <div className="rec-meters">
-        <div className="meter-row">
-          <div className="meter-head">
-            <span>Confidence</span>
-            <b className={confLow ? "low" : ""}>
-              {confPct}% · {confLow ? "Low" : confPct < 80 ? "Moderate" : "High"}
-            </b>
-          </div>
-          <div className="meter-track">
-            <div
-              className={`meter-fill ${confLow ? "amber" : ""}`}
-              style={{ width: visible ? `${confPct}%` : "0" }}
-            />
-          </div>
-        </div>
-        {ulPct > 0 && (
-          <div className="meter-row">
-            <div className="meter-head">
-              <span>Dose vs upper limit</span>
-              <b className={ulOver ? "bad" : ulHigh ? "low" : ""}>
-                {ulPct}% of UL
-              </b>
-            </div>
-            <div className="meter-track">
-              <div
-                className={`meter-fill ${ulOver ? "red" : ulHigh ? "amber" : ""}`}
-                style={{ width: visible ? `${Math.min(ulPct, 100)}%` : "0" }}
-              />
-              <div className="meter-tick" style={{ left: "80%" }} title="High-dose policy line (80%)" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="gate-strip">
-        {gates.map(([name, status]) => (
-          <span key={name} className={`status-chip ${status}`}>
-            {status === "pass" ? ICON_PASS : ICON_FLAG}
-            {name}
-          </span>
-        ))}
-      </div>
-
-      {rec.rationale.why && (
-        <p
-          className="rec-rationale"
-          dangerouslySetInnerHTML={{
-            __html: rec.rationale.why.replace(
-              /\*\*(.+?)\*\*/g,
-              "<b>$1</b>",
-            ),
-          }}
-        />
-      )}
-
-      {(rec.rationale.evidence || rec.rationale.safety) && (
-        <>
-          <button
-            type="button"
-            className="rationale-toggle print:hidden"
-            onClick={() => setRationaleOpen((v) => !v)}
-            aria-expanded={rationaleOpen}
-          >
-            Why · Evidence · Safety
-            <span>{rationaleOpen ? "−" : "+"}</span>
-          </button>
-          {rationaleOpen && (
-            <dl className="rationale-detail">
-              {rec.rationale.why && (
-                <div className="rationale-row">
-                  <dt>Why</dt>
-                  <dd>{rec.rationale.why}</dd>
-                </div>
-              )}
-              {rec.rationale.evidence && (
-                <div className="rationale-row">
-                  <dt>Evidence</dt>
-                  <dd>{rec.rationale.evidence}</dd>
-                </div>
-              )}
-              {rec.rationale.safety && (
-                <div className="rationale-row">
-                  <dt>Safety</dt>
-                  <dd>{rec.rationale.safety}</dd>
-                </div>
-              )}
-            </dl>
-          )}
-        </>
-      )}
-
-      <div className="rec-foot print:hidden">
-        <span className={`rec-notice ${!gated || feedbackChoice === "approve" ? "ok" : ""}`}>
-          <i />
+      <footer className="rec-card-foot print:hidden">
+        <span
+          className={`rec-notice ${
+            approved || (!gated && feedbackChoice !== "reject") ? "ok" : ""
+          }`}
+        >
+          <i aria-hidden />
           {notice ?? defaultNotice}
         </span>
-        <div className="fb-group" role="group" aria-label={`Feedback for ${rec.supplement.name}`}>
-          <button
-            type="button"
-            className={feedbackChoice === "approve" ? "sel-approve" : ""}
-            disabled={feedbackState === "sending"}
-            onClick={() => sendFeedback("approve", "accepted")}
-          >
-            Approve
-          </button>
-          <button
-            type="button"
-            className={feedbackChoice === "adjust" ? "sel-adjust" : ""}
-            disabled={feedbackState === "sending"}
-            onClick={() => sendFeedback("adjust", "modified")}
-          >
-            Adjust dose
-          </button>
-          <button
-            type="button"
-            className={feedbackChoice === "reject" ? "sel-reject" : ""}
-            disabled={feedbackState === "sending"}
-            onClick={() => sendFeedback("reject", "rejected")}
-          >
-            Reject
-          </button>
-        </div>
-      </div>
+
+        {adjustOpen ? (
+          <div className="dose-adjust" role="form" aria-label="Adjust dose">
+            <label className="dose-adjust-field">
+              <span>New amount</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={adjustAmount}
+                onChange={(e) => setAdjustAmount(e.target.value)}
+                disabled={feedbackState === "sending"}
+              />
+              <em>{dose.unit ?? ""}</em>
+            </label>
+            <div className="dose-adjust-actions">
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={cancelAdjust}
+                disabled={feedbackState === "sending"}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="sel-adjust"
+                onClick={saveAdjustment}
+                disabled={feedbackState === "sending"}
+              >
+                {feedbackState === "sending" ? "Saving…" : "Save adjustment"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="fb-group" role="group" aria-label={`Feedback for ${rec.supplement.name}`}>
+            {approved ? (
+              <span className="fb-status fb-status--approve">Approved</span>
+            ) : adjusted ? (
+              <>
+                <span className="fb-status fb-status--adjust">Dose adjusted</span>
+                <button
+                  type="button"
+                  className={feedbackChoice === "approve" ? "sel-approve" : ""}
+                  disabled={feedbackState === "sending"}
+                  onClick={() => sendFeedback("approve", "accepted")}
+                >
+                  Approve
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={feedbackChoice === "approve" ? "sel-approve" : ""}
+                  disabled={feedbackState === "sending"}
+                  onClick={() => sendFeedback("approve", "accepted")}
+                >
+                  Approve
+                </button>
+                <button
+                  type="button"
+                  className={feedbackChoice === "adjust" ? "sel-adjust" : ""}
+                  disabled={feedbackState === "sending"}
+                  onClick={openAdjust}
+                >
+                  Adjust dose
+                </button>
+                <button
+                  type="button"
+                  className={feedbackChoice === "reject" ? "sel-reject" : ""}
+                  disabled={feedbackState === "sending"}
+                  onClick={() => sendFeedback("reject", "rejected")}
+                >
+                  Reject
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </footer>
     </article>
   );
 }
 
 function buildGateChips(
   rec: RecommendationOut,
+  dose: DoseOut,
 ): [string, "pass" | "flag"][] {
   const interactFlag = rec.warnings.some(
     (w) => w.severity === "major" || w.severity === "contraindicated",
   );
-  const ulPct = rec.dose.ul_pct_used ?? 0;
-  const ulFlag = ulPct >= 80 || rec.dose.cap_applied;
+  const ulPct = dose.ul_pct_used ?? 0;
+  const ulFlag = ulPct >= 80 || dose.cap_applied;
   const clinFlag = rec.requires_clinician;
 
   return [

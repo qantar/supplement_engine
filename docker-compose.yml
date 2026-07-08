@@ -132,8 +132,9 @@ services:
     networks:
       - supplement_net
 
-  # ── Kafka — event streaming ───────────────────────────────────────────────
+  # ── Kafka — event streaming (optional; enable with profile `ingestion`) ───
   zookeeper:
+    profiles: [ingestion]
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: supplement_zookeeper
     environment:
@@ -143,6 +144,7 @@ services:
       - supplement_net
 
   kafka:
+    profiles: [ingestion]
     image: confluentinc/cp-kafka:7.6.0
     container_name: supplement_kafka
     restart: unless-stopped

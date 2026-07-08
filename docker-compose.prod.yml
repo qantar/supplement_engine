@@ -9,7 +9,7 @@ services:
       ALLOW_INLINE_PATIENT: "0"
       REQUIRE_API_KEY: "1"
       API_KEYS: ${API_KEYS:-pilot-dev-key-change-me}
-      KAFKA_ENABLED: ${KAFKA_ENABLED:-1}
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-0}
       PERSONALIZATION_ENABLED: ${PERSONALIZATION_ENABLED:-0}
 
   frontend:

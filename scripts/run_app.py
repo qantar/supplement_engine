@@ -80,9 +80,14 @@ class RunConfig:
 
 
 def log(msg: str, *, level: str = "info") -> None:
-    prefix = {"info": "→", "ok": "✓", "warn": "!", "err": "✗", "step": "•"}.get(
-        level, "→"
-    )
+    if platform.system() == "Windows":
+        prefix = {"info": ">", "ok": "+", "warn": "!", "err": "x", "step": "-"}.get(
+            level, ">"
+        )
+    else:
+        prefix = {"info": "→", "ok": "✓", "warn": "!", "err": "✗", "step": "•"}.get(
+            level, "→"
+        )
     print(f"{prefix} {msg}", flush=True)
 
 
@@ -103,7 +108,7 @@ def run(
         text=True,
     )
     if check and result.returncode != 0:
-        detail = result.stderr.strip() or result.stdout.strip()
+        detail = (result.stderr or "").strip() or (result.stdout or "").strip()
         raise StartupError(f"Command failed ({result.returncode}): {display}\n{detail}")
     return result
 
@@ -289,7 +294,15 @@ def bring_up(cfg: RunConfig) -> None:
         args.append("--build")
     args.extend(cfg.services)
     log(f"Starting containers: {', '.join(cfg.services)}")
-    run(compose_cmd(*args, profile=cfg.profile))
+    try:
+        run(compose_cmd(*args, profile=cfg.profile))
+    except StartupError as exc:
+        if "container name" in str(exc).lower() and "already in use" in str(exc).lower():
+            log("Stale container conflict — running docker compose down and retrying", level="warn")
+            run(compose_cmd("down", "--remove-orphans", profile=cfg.profile), check=False)
+            run(compose_cmd(*args, profile=cfg.profile))
+        else:
+            raise
 
 
 def bring_down(cfg: RunConfig) -> None:
@@ -656,6 +669,11 @@ Examples:
 
 
 def main() -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     parser = build_parser()
     args = parser.parse_args()
     os.chdir(ROOT)
@@ -671,7 +689,7 @@ def main() -> int:
     }
 
     print()
-    log(f"Supplement Engine — {args.command}")
+    log(f"Supplement Engine - {args.command}")
     if args.command == "up":
         log(
             f"Stack: {', '.join(cfg.services)} | "

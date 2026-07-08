@@ -63,6 +63,60 @@ async def test_celiac_recommends_malabsorption_nutrients(
 
 
 @pytest.mark.asyncio
+async def test_session_feedback_persists(
+    require_stack, api_base_url: str, t2dm_patient_payload: dict,
+):
+    headers = {"X-API-Key": "pilot-dev-key-change-me"}
+    async with httpx.AsyncClient(base_url=api_base_url, timeout=30.0) as client:
+        create = await client.post("/v1/recommendations", json=t2dm_patient_payload)
+        assert create.status_code == 200
+        created = create.json()
+        session_id = created["session_id"]
+        rec = created["recommendations"][0]
+        rec_id = rec["rec_id"]
+
+        feedback = await client.post(
+            "/v1/feedback",
+            headers=headers,
+            json={
+                "rec_id": rec_id,
+                "session_id": session_id,
+                "source": "clinician",
+                "action": "accepted",
+            },
+        )
+        assert feedback.status_code == 202
+
+        fetch = await client.get(f"/v1/sessions/{session_id}", headers=headers)
+        assert fetch.status_code == 200
+        stored = fetch.json()
+        assert len(stored.get("feedback", [])) == 1
+        assert stored["feedback"][0]["rec_id"] == rec_id
+        assert stored["feedback"][0]["action"] == "accepted"
+
+
+@pytest.mark.asyncio
+async def test_session_returns_suppressed_detail(
+    require_stack, api_base_url: str, hemochromatosis_patient_payload: dict,
+):
+    async with httpx.AsyncClient(base_url=api_base_url, timeout=30.0) as client:
+        create = await client.post("/v1/recommendations", json=hemochromatosis_patient_payload)
+        assert create.status_code == 200
+        created = create.json()
+        session_id = created["session_id"]
+        assert created.get("suppressed")
+
+        fetch = await client.get(f"/v1/sessions/{session_id}")
+        assert fetch.status_code == 200
+        stored = fetch.json()
+        assert stored["session_id"] == session_id
+        assert len(stored.get("suppressed", [])) >= 1
+        assert stored["suppressed"] == created["suppressed"]
+        if created.get("clinician_handoff"):
+            assert stored.get("clinician_handoff") == created["clinician_handoff"]
+
+
+@pytest.mark.asyncio
 async def test_postgres_persistence(
     require_stack, api_base_url: str, t2dm_patient_payload: dict,
 ):

@@ -511,7 +511,14 @@ async def get_recommendation_session(
     if not meta:
         raise HTTPException(status_code=404, detail="Session not found")
     recs = await repo.get_session_recommendations(session_id)
-    return {**meta, "recommendations": recs}
+    feedback_repo = FeedbackRepository(session)
+    feedback = await feedback_repo.get_by_session(session_id)
+    return {
+        **meta,
+        "recommendations": recs,
+        "feedback": feedback,
+        "disclaimer": "Wellness guidance only. Not a substitute for medical care.",
+    }
 
 
 @app.get("/v1/patients/{patient_id}/history", tags=["patients"])
@@ -689,5 +696,6 @@ def _session_to_response(session_obj, execution_ms: int) -> dict:
             for r in session_obj.recommendations
         ],
         "suppressed": session_obj.suppressed,
+        "feedback": [],
         "disclaimer": "Wellness guidance only. Not a substitute for medical care.",
     }

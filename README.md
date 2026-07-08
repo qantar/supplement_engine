@@ -71,30 +71,31 @@ POST /v1/recommendations { patient_id }
 
 ---
 
-## Quick Start
+## Quick Start (Docker — full stack, no real-time ingestion)
 
-> **First time setup?** With Docker Desktop installed, one command starts everything:
+> **One command** starts API, Postgres, Neo4j, Redis, Nginx, and the clinician console.  
+> Patient data is **seeded locally** (no warehouse feeder, no Kafka). Real-time ingestion can be added later.
 
 ```powershell
 cd supplement_engine
 python scripts/run_app.py up --open
-# or: .\scripts\start_app.ps1 -Open
 ```
 
-Or manually: `docker compose up -d --build api neo4j postgres redis nginx` then seed Neo4j (see setup doc).
+| URL | Purpose |
+|-----|---------|
+| http://localhost:3000 | Clinician console (intake → score → results) |
+| http://localhost/docs | Swagger API |
+| http://localhost:7474 | Neo4j browser |
+
+**What runs:** `api`, `frontend`, `neo4j`, `postgres`, `redis`, `nginx`  
+**What does not run:** Kafka/Zookeeper (optional `--profile ingestion` when you need events)
 
 ```powershell
-# Clinician console (with backend stack running)
-docker compose up --build frontend api neo4j postgres redis
-# console → http://localhost:3000
-```
-
-```powershell
-# After stack is up — test a recommendation
-curl.exe -X POST http://localhost/v1/recommendations -H "Content-Type: application/json" -d "@examples/patient_t2dm_riyadh.json"
-
-# Swagger UI
-start http://localhost/docs
+# Status / smoke / restart
+python scripts/run_app.py status
+python scripts/run_app.py smoke
+python scripts/run_app.py restart
+python scripts/run_app.py down
 ```
 
 ---

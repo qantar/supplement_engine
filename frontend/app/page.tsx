@@ -168,7 +168,7 @@ function ConsolePage() {
     <main className="app-wrap">
       <AppHeader modelVersion={data?.model_version} />
 
-      <div className="app-cols">
+      <div className={`app-cols${showResults ? " app-cols--results" : ""}`}>
         <section aria-label="Patient intake" className="print:hidden">
           <IntakeForm loading={loading} onSubmit={runScore} />
         </section>

@@ -332,14 +332,18 @@ class RecommendationRepository:
         orm = result.scalar_one_or_none()
         if not orm:
             return None
+        suppressed = orm.suppressed_detail if isinstance(orm.suppressed_detail, list) else []
         return {
             "session_id": orm.session_id,
             "patient_id": str(orm.patient_id),
             "model_version": orm.model_version,
             "evidence_snapshot_id": orm.evidence_snapshot_id,
             "requires_clinician": orm.requires_clinician,
+            "clinician_handoff": orm.clinician_handoff,
             "next_review_weeks": orm.next_review_weeks,
+            "execution_ms": orm.execution_ms or 0,
             "served_at": orm.served_at.isoformat(),
+            "suppressed": suppressed,
         }
 
     async def get_patient_history(
@@ -426,6 +430,33 @@ class FeedbackRepository:
             created_at=datetime.now(timezone.utc),
         ))
         return feedback_id
+
+    async def get_by_session(self, session_id: str) -> list[dict]:
+        """Latest feedback per recommendation in a session (for UI rehydration)."""
+        stmt = (
+            select(RecFeedbackORM)
+            .where(RecFeedbackORM.session_id == session_id)
+            .order_by(RecFeedbackORM.created_at.desc())
+        )
+        result = await self._s.execute(stmt)
+        rows = result.scalars().all()
+        latest: dict[str, RecFeedbackORM] = {}
+        for row in rows:
+            key = str(row.rec_id)
+            if key not in latest:
+                latest[key] = row
+        return [
+            {
+                "feedback_id": str(r.id),
+                "rec_id": str(r.rec_id),
+                "session_id": r.session_id,
+                "source": r.source,
+                "action": r.action,
+                "notes": r.notes,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in latest.values()
+        ]
 
     async def get_for_retraining(
         self, since: datetime, action_filter: Optional[list[str]] = None

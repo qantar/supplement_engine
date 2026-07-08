@@ -115,13 +115,14 @@ export function normalizeSessionDetail(
     model_version: raw.model_version,
     evidence_snapshot_id: raw.evidence_snapshot_id,
     requires_clinician: raw.requires_clinician,
-    clinician_handoff: null,
+    clinician_handoff: raw.clinician_handoff ?? null,
     next_review_in_weeks: raw.next_review_weeks,
-    execution_ms: 0,
+    execution_ms: raw.execution_ms ?? 0,
     served_at: raw.served_at,
     recommendations: raw.recommendations.map(normalizeStoredRec),
-    suppressed: [],
-    disclaimer: DEFAULT_DISCLAIMER,
+    suppressed: raw.suppressed ?? [],
+    feedback: raw.feedback ?? [],
+    disclaimer: raw.disclaimer ?? DEFAULT_DISCLAIMER,
   };
 }
 

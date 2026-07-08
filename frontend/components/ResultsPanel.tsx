@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { RecommendationResponse } from "@/lib/types";
+import { feedbackByRecId, rejectedRecIds } from "@/lib/feedback";
 import { formatSummary } from "@/lib/api";
 import { shortId } from "@/lib/format";
 import { useToast } from "@/components/Toast";
@@ -32,8 +33,8 @@ export function SessionLedger({ data }: { data: RecommendationResponse }) {
   }
 
   return (
-    <section className="panel">
-      <dl className="ledger">
+    <section className="session-bar panel">
+      <dl className="session-bar-meta">
         <div>
           <dt>Session</dt>
           <dd>
@@ -43,9 +44,7 @@ export function SessionLedger({ data }: { data: RecommendationResponse }) {
               onClick={() => copy(data.session_id, "session")}
               title="Copy session ID"
             >
-              {copiedField === "session"
-                ? "Copied"
-                : shortId(data.session_id)}
+              {copiedField === "session" ? "Copied" : shortId(data.session_id)}
             </button>
           </dd>
         </div>
@@ -69,20 +68,44 @@ export function SessionLedger({ data }: { data: RecommendationResponse }) {
               : "—"}
           </dd>
         </div>
-        <div className="ledger-actions print:hidden">
-          <button type="button" className="btn-secondary" onClick={() => window.print()}>
-            Print summary
-          </button>
-          <button type="button" className="btn-secondary" onClick={copySummary}>
-            Copy summary
-          </button>
-        </div>
       </dl>
+      <div className="session-bar-actions print:hidden">
+        <button type="button" className="btn-secondary" onClick={() => window.print()}>
+          Print summary
+        </button>
+        <button type="button" className="btn-secondary" onClick={copySummary}>
+          Copy summary
+        </button>
+      </div>
     </section>
   );
 }
 
 export function ResultsPanel({ data, animateCards = true }: Props) {
+  const feedbackMap = useMemo(
+    () => feedbackByRecId(data.feedback),
+    [data.feedback],
+  );
+
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(() =>
+    rejectedRecIds(data.feedback),
+  );
+
+  useEffect(() => {
+    setRejectedIds(rejectedRecIds(data.feedback));
+  }, [data.session_id, data.feedback]);
+
+  const visibleRecs = useMemo(
+    () => data.recommendations.filter((r) => !rejectedIds.has(r.rec_id)),
+    [data.recommendations, rejectedIds],
+  );
+
+  const count = visibleRecs.length;
+
+  function handleReject(recId: string) {
+    setRejectedIds((prev) => new Set(prev).add(recId));
+  }
+
   return (
     <div className="print-results">
       <SessionLedger data={data} />
@@ -106,10 +129,10 @@ export function ResultsPanel({ data, animateCards = true }: Props) {
           <div>
             <h3>This session requires clinician review.</h3>
             {data.clinician_handoff && <p>{data.clinician_handoff}</p>}
-            {!data.clinician_handoff && data.recommendations.length > 0 && (
+            {!data.clinician_handoff && count > 0 && (
               <p>
                 Indicated:{" "}
-                {data.recommendations.map((r) => r.supplement.name).join(", ")}
+                {visibleRecs.map((r) => r.supplement.name).join(", ")}
                 . Model <code>{data.model_version}</code>.
               </p>
             )}
@@ -117,37 +140,51 @@ export function ResultsPanel({ data, animateCards = true }: Props) {
         </div>
       )}
 
-      {data.recommendations.length === 0 ? (
-        <section className="panel">
-          <p style={{ color: "rgb(var(--muted))", textAlign: "center", padding: "24px 0" }}>
-            No recommendations cleared the threshold for this profile.
+      {count === 0 ? (
+        <section className="panel results-empty">
+          <p>
+            {data.recommendations.length > 0 && rejectedIds.size > 0
+              ? "All recommendations were rejected for this session."
+              : "No recommendations cleared the threshold for this profile."}
           </p>
-          <p className="hint" style={{ textAlign: "center" }}>
-            That is a valid result — a well-supplemented, low-risk patient.
+          <p className="hint">
+            {rejectedIds.size > 0
+              ? "Rejected items are logged in the audit trail."
+              : "That is a valid result — a well-supplemented, low-risk patient."}
           </p>
         </section>
       ) : (
-        <div className="rec-cards">
-          {data.recommendations.map((rec, i) => (
-            <RecommendationCard
-              key={rec.rec_id}
-              rec={rec}
-              sessionId={data.session_id}
-              index={i}
-              animateIn={animateCards}
-            />
-          ))}
-        </div>
+        <>
+          <div className="results-head">
+            <h2 className="results-title">
+              {count} recommendation{count === 1 ? "" : "s"}
+            </h2>
+            <p className="results-sub">Ranked by evidence · gated by safety policy</p>
+          </div>
+          <div className="rec-cards">
+            {visibleRecs.map((rec, i) => (
+              <RecommendationCard
+                key={rec.rec_id}
+                rec={rec}
+                sessionId={data.session_id}
+                index={i}
+                animateIn={animateCards}
+                initialFeedback={feedbackMap.get(rec.rec_id) ?? null}
+                onReject={handleReject}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       {data.suppressed.length > 0 && (
         <section className="panel suppressed-panel">
           <div className="panel-label">Suppressed by safety gate</div>
-          <ul>
+          <ul className="suppressed-list">
             {data.suppressed.map((s, i) => (
               <li key={i}>
-                <span>{s.nutrient_id}</span>
-                <span>— {s.reason}</span>
+                <span className="suppressed-nutrient">{s.nutrient_id}</span>
+                <span className="suppressed-reason">{s.reason}</span>
               </li>
             ))}
           </ul>
